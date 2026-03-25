@@ -4,8 +4,6 @@
 
 A full-stack contextual ad placement engine for broadcast and streaming content. Upload video footage, let TwelveLabs' AI models analyze every scene, and watch the engine intelligently rank ads by scene fit, viewer affinity, and brand safety — all in real time.
 
-**Live demo repo:** [github.com/nathanchess/paramount-context-ad-engine](https://github.com/nathanchess/paramount-context-ad-engine)
-
 ---
 
 ## What It Does
@@ -165,7 +163,7 @@ Raw Video Footage
       ▼
 TwelveLabs Index (Marengo + Pegasus)
       │
-      ├─ Marengo → 1024-dim embeddings per segment (stored in Vercel Blob)
+      ├─ Marengo → 512-dim embeddings per segment (stored in Vercel Blob)
       └─ Pegasus → Scene metadata: sentiment, tone, environment, GARM, ad categories
                              │
                              ▼
@@ -243,7 +241,7 @@ Or deploy to Vercel — all environment variables need to be set in the Vercel p
 
 ## License
 
-Private — TwelveLabs internal use only.
+
 
 ---
 
