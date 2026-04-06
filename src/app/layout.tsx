@@ -20,7 +20,9 @@ export const metadata: Metadata = {
   description:
     "AI-powered contextual ad engine built with TwelveLabs video understanding APIs.",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
