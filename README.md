@@ -361,7 +361,7 @@ Or deploy to Vercel — all environment variables (including `DATABRICKS_*`) nee
 
 ## License
 
-Private — TwelveLabs internal use only.
+
 
 ---
 
