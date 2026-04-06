@@ -188,6 +188,7 @@ export default function Sidebar() {
               alt="TwelveLabs"
               width={130}
               height={22}
+              style={{ width: "auto", height: 22 }}
               draggable={false}
               priority
             />

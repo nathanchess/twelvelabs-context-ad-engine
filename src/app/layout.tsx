@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   title: "Contextual Ad Engine — TwelveLabs",
   description:
     "AI-powered contextual ad engine built with TwelveLabs video understanding APIs.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
