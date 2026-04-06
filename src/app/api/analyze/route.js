@@ -4,11 +4,9 @@ import { list, put } from '@vercel/blob';
 
 export const maxDuration = 120;
 
-const tl_client = new TwelveLabs({
-    apiKey: process.env.TL_API_KEY
-})
 
 export async function POST(request) {
+    const tl_client = new TwelveLabs({ apiKey: process.env.TL_API_KEY });
     const { videoId, prompt, response_format } = await request.json()
 
     if (!videoId) {

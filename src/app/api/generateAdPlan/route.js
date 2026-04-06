@@ -195,9 +195,7 @@ const segment_chunk_response_format = {
    Shared Utilities
    ═══════════════════════════════════════════════════════════ */
 
-const tl_client = new TwelveLabs({
-    apiKey: process.env.TL_API_KEY,
-});
+
 
 function parseAnalyzeResult(raw) {
     if (!raw) return null;
@@ -222,6 +220,7 @@ function parseAnalyzeResult(raw) {
    ═══════════════════════════════════════════════════════════ */
 
 export async function POST(request) {
+    const tl_client = new TwelveLabs({ apiKey: process.env.TL_API_KEY });
     const { videoId, videoDuration: clientDuration } = await request.json();
 
     if (!videoId) {

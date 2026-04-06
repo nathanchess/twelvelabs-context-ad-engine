@@ -4,9 +4,6 @@ import { list, put } from "@vercel/blob";
 
 export const maxDuration = 120;
 
-const tl_client = new TwelveLabs({
-  apiKey: process.env.TL_API_KEY,
-});
 
 const summary_prompt = `
 You are helping a CTV ad-ops team understand a single ad video.
@@ -40,6 +37,7 @@ function parseAnalyzeResult(raw) {
 }
 
 export async function POST(request) {
+  const tl_client = new TwelveLabs({ apiKey: process.env.TL_API_KEY });
   const { videoId } = await request.json();
 
   if (!videoId) {

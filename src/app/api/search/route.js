@@ -1,11 +1,9 @@
 import { TwelveLabs } from "twelvelabs-js"
 import { NextResponse } from "next/server"
 
-const tl_client = new TwelveLabs({
-    apiKey: process.env.TL_API_KEY
-})
 
 export async function POST(request) {
+    const tl_client = new TwelveLabs({ apiKey: process.env.TL_API_KEY });
     const { query, indexName } = await request.json()
 
     if (!query) {
