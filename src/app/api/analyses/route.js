@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request) {
     try {
         const { blobs } = await list({ prefix: 'analysis_' });
         const analysisMap = {};

@@ -1,8 +1,8 @@
 # Contextual Ad Engine
 
-> **Powered by TwelveLabs** — Marengo multimodal embeddings + Pegasus generative scene analysis
+> **Powered by TwelveLabs + Databricks** — Marengo multimodal embeddings · Pegasus generative scene analysis · Databricks Delta Lake export
 
-A full-stack contextual ad placement engine for broadcast and streaming content. Upload video footage, let TwelveLabs' AI models analyze every scene, and watch the engine intelligently rank ads by scene fit, viewer affinity, and brand safety — all in real time.
+A full-stack contextual ad placement engine for broadcast and streaming content. Upload video footage, let TwelveLabs' AI models analyze every scene, and watch the engine intelligently rank ads by scene fit, viewer affinity, and brand safety — all in real time. Ad metadata and Marengo multimodal embeddings can be exported directly to Databricks Delta tables for downstream Mosaic AI Vector Search indexing.
 
 **Live demo repo:** [github.com/nathanchess/paramount-context-ad-engine](https://github.com/nathanchess/paramount-context-ad-engine)
 
@@ -13,11 +13,12 @@ A full-stack contextual ad placement engine for broadcast and streaming content.
 | Feature | Description |
 |---|---|
 | **Scene Analysis** | Pegasus generates time-stamped metadata per segment — sentiment, tone, environment, suitable ad categories, GARM brand-safety flags |
-| **Vector Matching** | Marengo 1024-dim embeddings power cosine similarity between ad creatives and video scenes |
+| **Vector Matching** | Marengo 512-dim embeddings power cosine similarity between ad creatives and video scenes |
 | **Two-Stage Scoring** | `totalScore = adAffinity × sceneFit` — scene context gates viewer affinity, not the reverse |
 | **Cross-Break Diversity** | No ad wins twice; category caps = `ceil(totalBreaks / 2)` |
 | **Semantic Video Search** | Natural-language search across all indexed content — surfaces matched timestamp clips |
 | **Ad-Injected Preview** | Full broadcast preview with ads injected at computed breaks, skip logic, and downloadable ad plan |
+| **Databricks Export** | One-click export of ad metadata + Marengo clip embeddings to a Databricks Delta table for Mosaic AI Vector Search |
 
 ---
 
@@ -29,6 +30,7 @@ A full-stack contextual ad placement engine for broadcast and streaming content.
 - **npm**, yarn, or pnpm
 - A [TwelveLabs account](https://playground.twelvelabs.io/) (free tier works)
 - A [Vercel account](https://vercel.com/) for Blob storage (free tier works)
+- *(Optional)* A [Databricks workspace](https://databricks.com/) with a running SQL warehouse for Delta Lake export
 
 ### 1. Clone & Install
 
@@ -78,9 +80,27 @@ TL_AD_INDEX_ID=...
 # Read/write token for Vercel Blob (stores analysis + embedding caches)
 # Get it from: https://vercel.com/dashboard → Storage → Blob
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
+
+# ── Databricks (optional — required only for Delta Lake export) ──
+# Personal access token from Databricks: User Settings → Developer → Access Tokens
+DATABRICKS_TOKEN=dapi...
+
+# Your Databricks workspace hostname (no https://)
+DATABRICKS_HOST=<workspace-id>.cloud.databricks.com
+
+# HTTP path to your SQL warehouse: Compute → <warehouse> → Connection details
+DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/<warehouse-id>
+
+# Optional: Unity Catalog name (e.g. "main"). Leave empty to use the warehouse default catalog.
+DATABRICKS_CATALOG=
+
+# Optional: Target schema within the catalog. Defaults to "default".
+DATABRICKS_SCHEMA=default
 ```
 
 > **Note:** All analysis results are cached to Vercel Blob so subsequent page loads are instant. The engine never re-analyzes a video it has already seen.
+
+> **Databricks:** The `DATABRICKS_*` variables are optional. The Databricks export button (`GET /api/databricks` status check) is always available in the UI, but running the SQL statement requires a configured warehouse.
 
 ---
 
@@ -134,25 +154,39 @@ src/app/
 │
 ├── api/
 │   ├── analyze/route.js              # Pegasus scene analysis (cached)
+│   ├── analyses/route.js             # Batch analysis map from Vercel Blob
 │   ├── search/route.js               # Marengo semantic search
 │   ├── videos/route.js               # Video index fetching + caching
-│   ├── upload/route.js               # Video upload to TwelveLabs
+│   ├── upload/route.js               # Client-side upload token (Vercel Blob)
 │   ├── embeddings/route.js           # Marengo segment embeddings (cached)
 │   ├── adInventory/route.js          # Ad inventory with vectors
 │   ├── affinityMatching/route.js     # User → ad affinity scoring
-│   └── generateAdPlan/route.js       # Ad placement plan generation
+│   ├── generateAdPlan/route.js       # Two-pass cast + scene analysis
+│   ├── generateVideoSummary/route.js # Quick Pegasus ad summary
+│   ├── hls-proxy/route.js            # Same-origin HLS proxy for CloudFront
+│   └── databricks/
+│       ├── route.js                  # GET — checks Databricks config status
+│       ├── export/route.js           # POST — runs SQL export to Delta table
+│       └── _lib/runSql.js            # @databricks/sql session helper
 │
 ├── lib/
 │   ├── adPlacementEngine.ts          # Core scoring engine (pure functions)
+│   ├── databricksExportSql.ts        # SQL builder for ad_metadata_* Delta tables
+│   ├── marengoAdEmbedding.ts         # Clip-avg Marengo vector helpers
 │   ├── types.ts                      # Shared TypeScript interfaces
 │   ├── videoCache.ts                 # localStorage video cache hook
+│   ├── hlsClientConfig.ts            # HLS.js config for proxy + CloudFront
 │   └── adInventoryStore.ts           # Ad category store (client-side)
 │
 └── components/
     ├── VideoCard.tsx                 # Video card with hover preview + search match
     ├── SegmentTimeline.tsx           # Scene segment timeline visualization
-    ├── VideoInventoryUploadModal.tsx # Upload modal
-    └── RecommendedAdsPlaceholder.tsx # Ad recommendation placeholder
+    ├── EmbeddingsView.tsx            # PCA scatter + Databricks metadata table
+    ├── DatabricksExportModal.tsx     # Export modal — SQL preview + run status
+    ├── AddCategoryModal.tsx          # Category/video upload modal
+    ├── Sidebar.tsx                   # App navigation
+    ├── SettingsModal.tsx             # Global settings
+    └── VideoInventoryUploadModal.tsx # Upload modal (video inventory)
 ```
 
 ---
@@ -165,7 +199,7 @@ Raw Video Footage
       ▼
 TwelveLabs Index (Marengo + Pegasus)
       │
-      ├─ Marengo → 1024-dim embeddings per segment (stored in Vercel Blob)
+      ├─ Marengo → 512-dim clip embeddings per segment (cached in Vercel Blob)
       └─ Pegasus → Scene metadata: sentiment, tone, environment, GARM, ad categories
                              │
                              ▼
@@ -186,6 +220,24 @@ TwelveLabs Index (Marengo + Pegasus)
                              ▼
                     Ad-Injected Preview
                     (HLS player + ad overlay)
+
+── Databricks Export Pipeline ─────────────────────────────────
+
+Ad Category (EmbeddingsView "Metadata View" tab)
+      │
+      ├─ Pegasus analysis → campaign_name, context tags, GARM, demographics
+      ├─ Marengo clip-avg → marengo_embedding_json (float[] as JSON string)
+      │
+      ▼
+DatabricksExportModal → POST /api/databricks/export
+      │   Catalog + Schema + CategoryName → SQL builder
+      │   CREATE OR REPLACE TABLE <catalog>.<schema>.ad_metadata_<suffix>
+      │   AS SELECT * FROM VALUES (...)
+      ▼
+Databricks SQL Warehouse → Delta table
+      │
+      └─ Mosaic AI Vector Search index on marengo_embedding_json column
+         (cast with from_json(marengo_embedding_json, 'array<double>'))
 ```
 
 ---
@@ -219,6 +271,72 @@ The cosine similarity is stretched from the expected raw range `[0.35, 0.75]` to
 | Styling | Tailwind CSS v4 + Strand Design System |
 | Storage | Vercel Blob (analysis + embedding cache) |
 | Streaming | HLS.js + CloudFront CDN |
+| Data Platform | Databricks Delta Lake + Mosaic AI Vector Search |
+| SQL Driver | `@databricks/sql` (Databricks Node.js SDK) |
+
+---
+
+## Databricks Setup Guide
+
+### How to Get Your Databricks Credentials
+
+#### Personal Access Token (`DATABRICKS_TOKEN`)
+1. In your Databricks workspace, go to **User Settings → Developer → Access Tokens**
+2. Click **Generate new token**
+3. Copy the token — it starts with `dapi`
+
+#### Workspace Host (`DATABRICKS_HOST`)
+- Found in the browser URL of your workspace: `https://<workspace-id>.cloud.databricks.com`
+- Set `DATABRICKS_HOST` to the hostname only (no `https://`)
+
+#### SQL Warehouse HTTP Path (`DATABRICKS_HTTP_PATH`)
+1. Go to **Compute → SQL Warehouses**
+2. Select your warehouse → **Connection details**
+3. Copy the **HTTP path** (e.g. `/sql/1.0/warehouses/abc123`)
+
+#### Catalog & Schema (`DATABRICKS_CATALOG`, `DATABRICKS_SCHEMA`)
+- Open **Data Explorer** in your workspace
+- Find a catalog and schema your user has `USE CATALOG`, `USE SCHEMA`, and `CREATE TABLE` permissions on
+- Leave `DATABRICKS_CATALOG` empty to use the warehouse's default catalog (Unity Catalog)
+- Set `DATABRICKS_SCHEMA` to the target schema name (default: `default`)
+
+### What Gets Exported
+
+For each ad category, the export creates/replaces a Delta table named:
+```
+<catalog>.<schema>.ad_metadata_<category_slug>
+```
+
+Delta table schema:
+
+| Column | Type | Source |
+|---|---|---|
+| `creative_id` | STRING | Filename or TwelveLabs video ID |
+| `campaign_name` | STRING | Pegasus proposed title |
+| `duration_sec` | INT | Video duration in seconds |
+| `extracted_visual_contexts` | STRING | Pegasus recommended contexts (JSON array) |
+| `target_demographics` | STRING | Pegasus demographics (JSON array) |
+| `negative_demographics` | STRING | Pegasus negative demographics (JSON array) |
+| `target_audience_affinity` | STRING | Pegasus audience tiers (JSON object) |
+| `negative_campaign_contexts` | STRING | Pegasus exclusions (JSON array) |
+| `brand_safety_garm` | STRING | GARM flags (JSON array) |
+| `marengo_embedding_json` | STRING | Clip-averaged Marengo vector (JSON float array) |
+| `embedding_dim` | INT | Vector dimension (typically 512) |
+| `embedding_model` | STRING | `twelvelabs_marengo` |
+| `vector_sync_status` | STRING | `embedded_marengo_clip_avg` or `pending_no_marengo_segments` |
+
+### Using Marengo Vectors in Mosaic AI Vector Search
+
+```sql
+-- Create embedding view for Mosaic AI Vector Search indexing
+CREATE OR REPLACE VIEW ad_metadata_premium_spirits_vec AS
+SELECT
+  creative_id,
+  campaign_name,
+  from_json(marengo_embedding_json, 'array<double>') AS embedding
+FROM main.default.ad_metadata_premium_spirits
+WHERE vector_sync_status = 'embedded_marengo_clip_avg';
+```
 
 ---
 
@@ -229,7 +347,7 @@ npm run build
 npm start
 ```
 
-Or deploy to Vercel — all environment variables need to be set in the Vercel project settings.
+Or deploy to Vercel — all environment variables (including `DATABRICKS_*`) need to be set in the Vercel project settings.
 
 ---
 
@@ -247,4 +365,4 @@ Private — TwelveLabs internal use only.
 
 ---
 
-*Built by Nathan Che · Powered by [TwelveLabs](https://www.twelvelabs.io)*
+*Built by Nathan Che · Powered by [TwelveLabs](https://www.twelvelabs.io) · Data platform by [Databricks](https://databricks.com)*

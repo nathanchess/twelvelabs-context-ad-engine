@@ -3,6 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
 /* ── Types ──────────────────────────────────────────────── */
+/** TwelveLabs Marengo clip-level segments from /api/videos (embeddingOption). */
+export type CachedVideoEmbeddingSegment = {
+    startOffsetSec?: number;
+    endOffsetSec?: number;
+    vector?: number[];
+};
+
 export interface CachedVideo {
     id: string;
     hls?: { videoUrl?: string; thumbnailUrls?: string[] };
@@ -10,11 +17,17 @@ export interface CachedVideo {
         filename?: string; duration?: number; width?: number; height?: number; fps?: number; size?: number;
     };
     userMetadata?: string | null;
+    /** Averaged in UI/export for one vector per creative */
+    embedding_segments?: CachedVideoEmbeddingSegment[];
+    /** Legacy single vector */
+    embedding?: number[];
 }
 
 interface CacheEntry {
     videos: CachedVideo[];
-    timestamp: number;           // Date.now() when cached
+    timestamp: number;
+    /** True when Marengo vectors were dropped to fit localStorage; triggers a background refetch. */
+    embeddingsOmitted?: boolean;
 }
 
 /* ── Config ─────────────────────────────────────────────── */
@@ -34,14 +47,65 @@ function readCache(index: string): CacheEntry | null {
     } catch { return null; }
 }
 
+/** Marengo clip vectors are huge; omit from persistence when quota is tight. */
+function stripEmbeddingsForStorage(videos: CachedVideo[]): CachedVideo[] {
+    return videos.map((v) => {
+        const copy: CachedVideo = { ...v };
+        delete copy.embedding_segments;
+        delete copy.embedding;
+        return copy;
+    });
+}
+
+function isQuotaError(err: unknown): boolean {
+    return (
+        err instanceof DOMException && err.name === "QuotaExceededError"
+    ) || (err instanceof Error && err.name === "QuotaExceededError");
+}
+
 function writeCache(index: string, videos: CachedVideo[]): void {
-    try {
-        const entry: CacheEntry = { videos, timestamp: Date.now() };
-        localStorage.setItem(getCacheKey(index), JSON.stringify(entry));
-    } catch (err) {
-        // localStorage might be full — silently fail, data still works in-memory
-        console.warn("[videoCache] Could not write to localStorage:", err);
+    const key = getCacheKey(index);
+    const ts = Date.now();
+
+    const trySet = (entry: CacheEntry): boolean => {
+        try {
+            localStorage.setItem(key, JSON.stringify(entry));
+            return true;
+        } catch (err) {
+            if (!isQuotaError(err)) {
+                console.warn("[videoCache] Could not write to localStorage:", err);
+            }
+            return false;
+        }
+    };
+
+    const full: CacheEntry = { videos, timestamp: ts, embeddingsOmitted: false };
+    if (trySet(full)) return;
+
+    const slim: CacheEntry = {
+        videos: stripEmbeddingsForStorage(videos),
+        timestamp: ts,
+        embeddingsOmitted: true,
+    };
+    if (trySet(slim)) {
+        console.warn(
+            "[videoCache] Saved metadata only (Marengo embeddings omitted) to fit localStorage. A background fetch will reload vectors."
+        );
+        return;
     }
+
+    try {
+        localStorage.removeItem(key);
+    } catch {
+        /* ignore */
+    }
+
+    if (trySet(slim)) {
+        console.warn("[videoCache] Saved metadata-only after clearing prior cache key.");
+        return;
+    }
+
+    console.warn("[videoCache] localStorage full or unavailable; cache not persisted (in-memory data still works).");
 }
 
 /**
@@ -100,9 +164,10 @@ export function useVideos(index: string = "tl-context-engine-ads") {
             setVideos(cached.videos);
             setLoading(false);
 
-            // If stale, refresh in background (no loading spinner)
             const age = Date.now() - cached.timestamp;
-            if (age > STALE_MS) {
+            const stale = age > STALE_MS;
+            // Reload full payloads (including Marengo segments) when cache was slimmed or old
+            if (stale || cached.embeddingsOmitted) {
                 fetchFresh(false);
             }
         } else {

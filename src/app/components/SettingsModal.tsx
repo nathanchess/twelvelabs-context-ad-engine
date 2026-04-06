@@ -5,6 +5,15 @@ interface SettingsModalProps {
     onClose: () => void;
 }
 
+/** README / deploy docs; override with NEXT_PUBLIC_GITHUB_SOURCE_URL if the repo moves */
+const DEFAULT_SOURCE_REPO =
+    process.env.NEXT_PUBLIC_GITHUB_SOURCE_URL ||
+    "https://github.com/nathanchess/paramount-context-ad-engine";
+
+/**
+ * API credentials are not collected in the browser. Copy explains internal TwelveLabs ownership
+ * and links to GitHub for local deployment details.
+ */
 export default function SettingsModal({ open, onClose }: SettingsModalProps) {
     if (!open) return null;
 
@@ -13,17 +22,14 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
             className="fixed inset-0 z-[100] flex items-center justify-center"
             onClick={onClose}
         >
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-gray-700/40 backdrop-blur-[2px] animate-fade-in" />
 
-            {/* Modal Panel */}
             <div
                 className="relative bg-white rounded-2xl shadow-lg w-full max-w-[480px] mx-4 animate-modal-in"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border-light">
-                    <h2 className="text-lg font-semibold text-text-primary">Settings</h2>
+                    <h2 className="text-lg font-semibold text-text-primary">Configuration</h2>
                     <button
                         onClick={onClose}
                         className="p-1.5 rounded-md text-text-tertiary hover:text-text-primary hover:bg-gray-50 transition-colors duration-200"
@@ -36,49 +42,47 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="px-6 py-6 space-y-6">
-                    {/* API Key */}
-                    <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">
-                            TwelveLabs API Key
-                        </label>
-                        <input
-                            type="password"
-                            placeholder="Enter your API key"
-                            className="w-full px-4 py-2.5 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-default transition-colors"
-                        />
-                        <p className="text-xs text-text-tertiary mt-1.5">
-                            Your API key is stored locally and never shared.
-                        </p>
-                    </div>
-
-                    {/* Index Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">
-                            Index Name
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="e.g. my-video-index"
-                            className="w-full px-4 py-2.5 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-default transition-colors"
-                        />
-                    </div>
+                <div className="px-6 py-6 space-y-4 text-sm text-text-secondary leading-relaxed">
+                    <p>
+                        API keys and integration credentials for this deployment are{" "}
+                        <span className="font-medium text-text-primary">managed directly by TwelveLabs internal team members</span>.
+                        They are not configurable through this interface.
+                    </p>
+                    <p>
+                        If you need to run or configure the app yourself (for example a local deployment), use the
+                        source repository: environment variables such as{" "}
+                        <span className="font-mono text-text-primary">TL_API_KEY</span>,{" "}
+                        <span className="font-mono text-text-primary">BLOB_READ_WRITE_TOKEN</span>, and optional{" "}
+                        <span className="font-mono text-text-primary">DATABRICKS_*</span> are documented there for
+                        analyze, search, video listing, generation, Vercel Blob caching, and the ad metadata SQL export.
+                    </p>
+                    <a
+                        href={DEFAULT_SOURCE_REPO}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-border-light bg-gray-50 text-sm font-medium text-text-primary hover:bg-gray-100 hover:border-border-default transition-colors"
+                    >
+                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden>
+                            <path
+                                fillRule="evenodd"
+                                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+                            />
+                        </svg>
+                        GitHub — source &amp; local setup
+                    </a>
+                    <p className="text-xs text-text-tertiary">
+                        Keys are never stored in the browser; exposing them in a deployed UI would be unsafe for a
+                        public demo.
+                    </p>
                 </div>
 
-                {/* Footer */}
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
                     <button
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-full border border-border-default text-sm font-medium text-text-primary hover:border-gray-700 transition-all duration-200 hover:rounded-2xl"
-                    >
-                        Cancel
-                    </button>
-                    <button
+                        type="button"
                         onClick={onClose}
                         className="px-4 py-2 rounded-full bg-gray-700 text-white text-sm font-medium hover:bg-gray-600 transition-all duration-200 hover:rounded-2xl"
                     >
-                        Save
+                        Close
                     </button>
                 </div>
             </div>

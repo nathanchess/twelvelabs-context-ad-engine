@@ -1,7 +1,31 @@
 import { NextResponse } from 'next/server';
 import { list, del } from '@vercel/blob';
 
-export async function POST() {
+/**
+ * Clears all `analysis_*.json` blobs (Pegasus metadata cache).
+ * - Development: allowed without auth.
+ * - Production: requires Authorization: Bearer <ANALYSES_CLEAR_SECRET> if that env var is set;
+ *   if unset, route returns 403 (prevents accidental mass delete on public deploys).
+ */
+export async function POST(request) {
+    const secret = process.env.ANALYSES_CLEAR_SECRET?.trim();
+
+    if (process.env.NODE_ENV === "production") {
+        if (!secret) {
+            return NextResponse.json(
+                {
+                    error:
+                        "Clearing analysis cache is disabled in production. Set ANALYSES_CLEAR_SECRET and call with Authorization: Bearer <secret>, or run in development.",
+                },
+                { status: 403 }
+            );
+        }
+        const auth = request.headers.get("authorization");
+        if (auth !== `Bearer ${secret}`) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+    }
+
     try {
         const { blobs } = await list({ prefix: 'analysis_' });
         const blobUrls = blobs.map(b => b.url);

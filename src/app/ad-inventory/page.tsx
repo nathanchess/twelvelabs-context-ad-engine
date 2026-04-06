@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import AddCategoryModal from "../components/AddCategoryModal";
 import { getCategories, type AdCategory } from "../lib/adInventoryStore";
@@ -40,8 +40,6 @@ export default function AdInventoryPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchFocused, setSearchFocused] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
 
     // Video data from cache (instant on navigation, background refresh if stale)
     const { videos: allVideos, loading: dataLoading, refresh: refreshVideos } = useVideos();
@@ -82,15 +80,7 @@ export default function AdInventoryPage() {
         return result;
     }, [allVideos]);
 
-    useEffect(() => {
-        function handleClickOutside(e: MouseEvent) {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-                setOpenMenuId(null);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+
 
     const filteredAds = categories.filter((ad) => {
         if (!searchQuery) return true;
@@ -203,41 +193,18 @@ export default function AdInventoryPage() {
                                         </div>
                                     </Link>
 
-                                    {/* Actions Menu */}
-                                    <div className="absolute top-[160px] right-4 z-10" ref={openMenuId === ad.id ? menuRef : undefined}>
-                                        <button
-                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpenMenuId(openMenuId === ad.id ? null : ad.id); }}
+                                    {/* View Videos link */}
+                                    <div className="absolute top-[160px] right-4 z-10">
+                                        <a
+                                            href={`/ad-inventory/${ad.slug}`}
+                                            onClick={(e) => e.stopPropagation()}
                                             className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary bg-gray-50/80 hover:bg-gray-100 transition-all duration-200"
+                                            title="View Videos"
                                         >
-                                            <svg viewBox="0 0 4 16" fill="currentColor" className="w-3 h-4">
-                                                <circle cx="2" cy="2" r="1.5" /><circle cx="2" cy="8" r="1.5" /><circle cx="2" cy="14" r="1.5" />
+                                            <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
+                                                <path d="M4.5 4.315C4.5 3.657 5.235 3.271 5.77 3.649L8.156 5.334C8.615 5.657 8.615 6.343 8.156 6.667L5.77 8.352C5.235 8.729 4.5 8.343 4.5 7.685V4.315Z" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                                             </svg>
-                                        </button>
-                                        {openMenuId === ad.id && (
-                                            <div className="absolute top-full right-0 mt-1 w-[160px] bg-white rounded-xl border border-border-light shadow-lg z-30 animate-fade-in overflow-hidden py-1">
-                                                {[
-                                                    { label: "View Videos", icon: "M5.55217 4.79V7.21L7.265 6L5.55217 4.79ZM4.5 4.315C4.5 3.657 5.235 3.271 5.77 3.649L8.156 5.334C8.615 5.657 8.615 6.343 8.156 6.667L5.77 8.352C5.235 8.729 4.5 8.343 4.5 7.685V4.315Z" },
-                                                    { label: "Edit Name", icon: "M8.5 1.5L10.5 3.5 4 10H2V8L8.5 1.5Z" },
-                                                    { label: "Edit Rules", icon: "M1 3h10M1 6h10M1 9h6" },
-                                                    { label: "Delete", icon: "M2 3h8M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1M5 5.5v4M7 5.5v4M3 3l.5 7a1 1 0 001 1h3a1 1 0 001-1L9 3", danger: true },
-                                                ].map((action) => (
-                                                    <button
-                                                        key={action.label}
-                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpenMenuId(null); }}
-                                                        className={`w-full text-left px-3.5 py-2 text-sm flex items-center gap-2.5 transition-colors duration-150
-                                                            ${(action as { danger?: boolean }).danger
-                                                                ? "text-red-500 hover:bg-red-50"
-                                                                : "text-text-secondary hover:bg-gray-50 hover:text-text-primary"
-                                                            }`}
-                                                    >
-                                                        <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5 shrink-0">
-                                                            <path d={action.icon} stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                                                        </svg>
-                                                        {action.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
+                                        </a>
                                     </div>
                                 </div>
                             );

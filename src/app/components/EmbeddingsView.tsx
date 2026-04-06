@@ -1,17 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Search, ZoomIn, ZoomOut, Maximize, Clock, FileText, Loader2, X, ScatterChart, Cpu, Database, Download } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Search, ZoomIn, ZoomOut, Maximize, Clock, FileText, X, ScatterChart, Cpu, Database, Download } from 'lucide-react';
 import { CachedVideo } from '../lib/videoCache';
+import type { AdMetadataExportRow } from '../lib/databricksExportSql';
+import { embeddingVectorToJson, getMarengoAdVectorForCreative } from '../lib/marengoAdEmbedding';
+import DatabricksExportModal from './DatabricksExportModal';
 
 const POINT_SIZE = 16;
 const HOVER_SCALE = 2;
 
 interface EmbeddingsViewProps {
     videos: CachedVideo[];
+    categoryName: string;
 }
 
-export default function EmbeddingsView({ videos }: EmbeddingsViewProps) {
+export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewProps) {
     const [points, setPoints] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [transform, setTransform] = useState({ x: 0, y: 0, k: 1 });
@@ -21,6 +25,7 @@ export default function EmbeddingsView({ videos }: EmbeddingsViewProps) {
     const [hoveredVideo, setHoveredVideo] = useState<CachedVideo | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isTableExpanded, setIsTableExpanded] = useState(false);
+    const [exportModalOpen, setExportModalOpen] = useState(false);
 
     // Analysis Cache State
     const [analysisMap, setAnalysisMap] = useState<Record<string, any>>({});
@@ -30,6 +35,39 @@ export default function EmbeddingsView({ videos }: EmbeddingsViewProps) {
     const analyzingRef = useRef(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const adMetadataExportRows: AdMetadataExportRow[] = useMemo(() => {
+        return videos.map((v) => {
+            const ana = analysisMap[v.id];
+            const ta = ana?.targetAudience;
+            let audienceStr = "";
+            if (typeof ta === "string") audienceStr = ta;
+            else if (ta && typeof ta === "object") {
+                audienceStr = JSON.stringify({
+                    highPriority: ta.highPriority || [],
+                    mediumPriority: ta.mediumPriority || [],
+                    lowPriority: ta.lowPriority || [],
+                });
+            }
+            const adVec = getMarengoAdVectorForCreative(v);
+            const marengoJson = embeddingVectorToJson(adVec);
+            return {
+                creativeId: String(v.systemMetadata?.filename || v.id),
+                campaignName: String(ana?.proposedTitle || ""),
+                durationSeconds: Math.round(v.systemMetadata?.duration || 0),
+                extractedVisualContexts: JSON.stringify(ana?.recommendedContexts || []),
+                targetDemographics: JSON.stringify(ana?.targetDemographics || []),
+                negativeDemographics: JSON.stringify(ana?.negativeDemographics || []),
+                targetAudienceAffinity: audienceStr,
+                negativeCampaignContexts: JSON.stringify(ana?.negativeCampaignContexts || []),
+                brandSafetyGarm: JSON.stringify(ana?.brandSafetyGARM || []),
+                marengoEmbeddingJson: marengoJson,
+                embeddingDim: adVec ? adVec.length : 0,
+                embeddingModel: adVec ? "twelvelabs_marengo" : "",
+                vectorSyncStatus: adVec ? "embedded_marengo_clip_avg" : "pending_no_marengo_segments",
+            };
+        });
+    }, [videos, analysisMap]);
 
     // Load globally cached analysis data from Vercel Blob
     useEffect(() => {
@@ -461,7 +499,7 @@ Return ONLY valid JSON, no markdown fences.`;
                 )}
             </div>
 
-            {/* Simulated Database Metadata View */}
+            {/* Ad metadata table + Databricks export (data is real; labels match export SQL) */}
             <div className="mt-6 flex-none bg-white border border-border-light rounded-2xl overflow-hidden shadow-sm">
                 <div className="px-5 py-3 border-b border-border-light flex items-center justify-between bg-gray-50/50">
                     <div className="flex items-center gap-2">
@@ -475,28 +513,10 @@ Return ONLY valid JSON, no markdown fences.`;
                             </span>
                         )}
                         <button
-                            onClick={async () => {
-                                if (confirm("This will clear the Databricks cache and force the AI to regenerate metadata for this category. Continue?")) {
-                                    setAnalyzingAll(true);
-                                    setAnalyzingProgress(0);
-                                    try {
-                                        await fetch('/api/analyses/clear', { method: 'POST' });
-                                        // Reset state to trigger re-analysis
-                                        setAnalysisMap({});
-                                        setAnalysesLoaded(false);
-                                        analyzingRef.current = false;
-                                        setTimeout(() => setAnalysesLoaded(true), 100);
-                                    } catch (e) {
-                                        console.error(e);
-                                    }
-                                }
-                            }}
+                            type="button"
+                            onClick={() => setExportModalOpen(true)}
                             className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary hover:text-text-primary hover:bg-gray-100 px-2.5 py-1 rounded border border-border-light transition-colors cursor-pointer"
                         >
-                            <Loader2 className={`w-3.5 h-3.5 ${analyzingAll ? 'animate-spin' : ''}`} />
-                            Regenerate
-                        </button>
-                        <button className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary hover:text-text-primary hover:bg-gray-100 px-2.5 py-1 rounded border border-border-light transition-colors">
                             <Download className="w-3.5 h-3.5" />
                             Export
                         </button>
@@ -515,7 +535,7 @@ Return ONLY valid JSON, no markdown fences.`;
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Target Audience Affinity</th>
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Negative Campaign Contexts</th>
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Brand Safety (GARM)</th>
-                                <th className="px-5 py-3 font-medium whitespace-nowrap">Vector Sync Status</th>
+                                <th className="px-5 py-3 font-medium whitespace-nowrap">Marengo embedding</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-light text-text-secondary">
@@ -539,6 +559,8 @@ Return ONLY valid JSON, no markdown fences.`;
                                 const negContexts = ana?.negativeCampaignContexts?.length > 0 ? `[${ana.negativeCampaignContexts.slice(0, 3).join(", ")}]` : <span className="text-text-tertiary italic text-[11px]">Pending...</span>;
                                 const exclusions = ana?.brandSafetyGARM?.length > 0 ? `[${ana.brandSafetyGARM.slice(0, 3).join(", ")}]` : <span className="text-text-tertiary italic text-[11px] font-medium text-mb-green-dark">Clean</span>;
 
+                                const adVec = getMarengoAdVectorForCreative(v);
+
                                 return (
                                     <tr key={v.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-5 py-3 font-mono text-[11px] font-medium text-text-primary truncate max-w-[120px]">{creativeId}</td>
@@ -550,11 +572,22 @@ Return ONLY valid JSON, no markdown fences.`;
                                         <td className="px-5 py-3 truncate max-w-[160px] text-text-secondary">{audience}</td>
                                         <td className="px-5 py-3 truncate max-w-[160px] text-text-secondary">{typeof negContexts === 'string' ? negContexts : null}{typeof negContexts === 'object' ? negContexts : null}</td>
                                         <td className="px-5 py-3 text-red-600 truncate max-w-[150px]">{exclusions}</td>
-                                        <td className="px-5 py-3">
-                                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-mb-green-light/60 bg-mb-green-light/20 text-[10px] font-medium text-mb-green-dark">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-mb-green-dark shrink-0" />
-                                                Active in Vector DB
-                                            </span>
+                                        <td className="px-5 py-3 max-w-[200px]">
+                                            {adVec ? (
+                                                <span className="inline-flex flex-col gap-0.5">
+                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-mb-green-light/60 bg-mb-green-light/20 text-[10px] font-medium text-mb-green-dark w-fit">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-mb-green-dark shrink-0" />
+                                                        {adVec.length}d in Delta export
+                                                    </span>
+                                                    <span className="text-[10px] text-text-tertiary leading-snug">
+                                                        JSON array for Mosaic / Vector Search
+                                                    </span>
+                                                </span>
+                                            ) : (
+                                                <span className="text-text-tertiary italic text-[11px]">
+                                                    No clips in cache — refresh Videos tab
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 )
@@ -573,6 +606,13 @@ Return ONLY valid JSON, no markdown fences.`;
                     </div>
                 )}
             </div>
+
+            <DatabricksExportModal
+                open={exportModalOpen}
+                onClose={() => setExportModalOpen(false)}
+                categoryName={categoryName}
+                rows={adMetadataExportRows}
+            />
         </div>
     );
 }
@@ -601,6 +641,9 @@ function SafeVideo({ src, className, controls, muted, loop, playsInline }: any) 
             src={src}
             className={className}
             controls={controls}
+            controlsList="nodownload noplaybackrate noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
             muted={muted}
             loop={loop}
             playsInline={playsInline}

@@ -130,11 +130,16 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-
     // Pass in public video URLs and associated user metadata to add to TwelveLabs index.
     // Video URLS from Vercel Blob storage on client-side upload first.
 
     const { videoURLs, metadata, target_index } = await request.json()
+    if (!Array.isArray(videoURLs) || videoURLs.length === 0) {
+        return NextResponse.json({ error: "videoURLs is required" }, { status: 400 });
+    }
+    if (videoURLs.length > 10) {
+        return NextResponse.json({ error: "Max 10 videos per request" }, { status: 400 });
+    }
 
     const tl_client = getTwelveLabsClient()
     const indexId = await getIndexId(target_index || "tl-context-engine-ads")

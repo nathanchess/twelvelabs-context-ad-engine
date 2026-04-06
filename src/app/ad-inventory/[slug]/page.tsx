@@ -285,7 +285,7 @@ export default function AdCategoryDetailPage() {
             {/* ── Content (full width) ───────────────────────────── */}
             <div className="px-8 py-6 space-y-8">
                 {activeTab === "embeddings" && (
-                    <EmbeddingsView videos={videos} />
+                    <EmbeddingsView videos={videos} categoryName={data.category} />
                 )}
 
                 {activeTab === "videos" && (

@@ -100,6 +100,9 @@ function VideoPreviewCard({
                 muted
                 loop
                 playsInline
+                controlsList="nodownload noplaybackrate noremoteplayback"
+                disablePictureInPicture
+                disableRemotePlayback
                 preload="metadata"
                 className="w-full aspect-video object-cover"
             />

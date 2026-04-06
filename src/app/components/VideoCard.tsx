@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import Hls from "hls.js";
 import { type CachedVideo } from "../lib/videoCache";
 
 interface VideoCardProps {
@@ -33,7 +32,6 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
 
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
-    const hlsRef = useRef<Hls | null>(null);
     const rafRef = useRef<number>(0);
 
     const tick = useCallback(() => {
@@ -47,9 +45,6 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
 
     const handleMouseEnter = () => {
         setHovering(true);
-        if (videoRef.current) {
-            videoRef.current.play().catch(() => { });
-        }
     };
 
     const handleMouseLeave = () => {
@@ -70,20 +65,26 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
         const el = videoRef.current;
         if (!el || !hlsUrl || !hovering) return;
 
-        if (Hls.isSupported() && hlsUrl.includes(".m3u8")) {
-            if (!hlsRef.current) {
-                const hls = new Hls({ enableWorker: false });
-                hls.loadSource(hlsUrl);
-                hls.attachMedia(el);
-                hlsRef.current = hls;
-            }
-        } else {
+        // Use native media loading for hover previews to avoid HLS.js XHR CORS preflight failures
+        // against CloudFront URLs that don't return Access-Control-Allow-Origin on localhost.
+        if (el.src !== hlsUrl) {
             el.src = hlsUrl;
+            el.load();
         }
+        const tryPlay = () => {
+            if (!hovering) return;
+            el.play().catch(() => { });
+        };
+        // First-hover reliability: attempt play once metadata/canplay is ready.
+        el.addEventListener("loadedmetadata", tryPlay);
+        el.addEventListener("canplay", tryPlay);
+        tryPlay();
 
         rafRef.current = requestAnimationFrame(tick);
 
         return () => {
+            el.removeEventListener("loadedmetadata", tryPlay);
+            el.removeEventListener("canplay", tryPlay);
             cancelAnimationFrame(rafRef.current);
         };
     }, [hovering, hlsUrl, tick]);
@@ -129,9 +130,12 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                         <video
                             ref={videoRef}
                             loop
-                            muted={!hovering} // Audio plays on hover
+                            muted
                             playsInline
                             preload="none"
+                            controlsList="nodownload noplaybackrate noremoteplayback"
+                            disablePictureInPicture
+                            disableRemotePlayback
                             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
                             style={{ opacity: hovering ? 1 : 0, zIndex: hovering ? 2 : 0 }}
                         />
@@ -162,14 +166,14 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                 
                 {/* Centered Timestamp */}
                 {duration > 0 && (
-                    <span className={`absolute bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded border border-white text-[11px] font-bold text-white shadow-sm backdrop-blur-sm pointer-events-none transition-opacity duration-200 z-[3] ${hovering ? "opacity-0" : "opacity-100"}`}>
+                    <span className={`absolute bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded border border-white text-[11px] font-bold text-white shadow-sm backdrop-blur-sm pointer-events-none transition-opacity duration-200 z-3 ${hovering ? "opacity-0" : "opacity-100"}`}>
                         {formatDuration(duration)}
                     </span>
                 )}
 
                 {/* Hover progress bar */}
                 {hovering && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-[4]">
+                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-4">
                         {searchMatch && duration > 0 && (
                             <div
                                 className="absolute top-0 bottom-0 bg-mb-pink-dark/80 z-10"

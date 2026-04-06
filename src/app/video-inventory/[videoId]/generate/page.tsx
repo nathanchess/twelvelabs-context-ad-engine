@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import Hls from "hls.js";
+import { hlsClientConfig } from "../../../lib/hlsClientConfig";
 import { useVideos } from "../../../lib/videoCache";
 import {
   identifyAdBreaks,
@@ -15,8 +16,10 @@ import {
   MOCK_USERS,
   type AdInventoryItem,
   type CastMember,
+  type PlacementConfig,
   type Segment,
 } from "../../../lib/types";
+import OverviewCodeBlock from "../../../components/OverviewCodeBlock";
 
 function fmt(secs: number): string {
   const m = Math.floor(secs / 60);
@@ -38,6 +41,25 @@ export default function GeneratedVideoPreviewPage() {
   const videoId = params.videoId as string;
   const selectedUserId = searchParams.get("user") || "ethan";
   const user = MOCK_USERS.find((u) => u.id === selectedUserId) || MOCK_USERS[0];
+  const parsedPlacementConfig = useMemo<PlacementConfig>(() => {
+    const safetyModeRaw = searchParams.get("safetyMode");
+    const safetyMode =
+      safetyModeRaw === "strict" || safetyModeRaw === "balanced" || safetyModeRaw === "revenue_max"
+        ? safetyModeRaw
+        : DEFAULT_PLACEMENT_CONFIG.safetyMode;
+
+    const maxBreaks = Number(searchParams.get("maxBreaks"));
+    const minSpacingSeconds = Number(searchParams.get("minSpacingSeconds"));
+    const minSegmentDuration = Number(searchParams.get("minSegmentDuration"));
+
+    return {
+      ...DEFAULT_PLACEMENT_CONFIG,
+      safetyMode,
+      maxBreaks: Number.isFinite(maxBreaks) ? Math.max(1, Math.min(8, Math.round(maxBreaks))) : DEFAULT_PLACEMENT_CONFIG.maxBreaks,
+      minSpacingSeconds: Number.isFinite(minSpacingSeconds) ? Math.max(30, Math.round(minSpacingSeconds)) : DEFAULT_PLACEMENT_CONFIG.minSpacingSeconds,
+      minSegmentDuration: Number.isFinite(minSegmentDuration) ? Math.max(10, Math.round(minSegmentDuration)) : DEFAULT_PLACEMENT_CONFIG.minSegmentDuration,
+    };
+  }, [searchParams]);
 
   const { videos, loading: videosLoading } = useVideos("tl-context-engine-videos");
   const video = useMemo(() => videos.find((v) => v.id === videoId) || null, [videos, videoId]);
@@ -111,11 +133,14 @@ export default function GeneratedVideoPreviewPage() {
     () => segments.map((seg, i) => ({ ...seg, vector: segmentVectors[i] ?? undefined })),
     [segments, segmentVectors]
   );
-  const adBreaks = useMemo(() => identifyAdBreaks(enrichedSegments, DEFAULT_PLACEMENT_CONFIG), [enrichedSegments]);
+  const adBreaks = useMemo(
+    () => identifyAdBreaks(enrichedSegments, parsedPlacementConfig),
+    [enrichedSegments, parsedPlacementConfig]
+  );
   const eligibilityCache = useMemo(() => buildUserEligibilityCache(user, adInventory), [user, adInventory]);
   const plan = useMemo(
-    () => selectAdsWithDiversity(adBreaks, user, adInventory, DEFAULT_PLACEMENT_CONFIG, eligibilityCache),
-    [adBreaks, user, adInventory, eligibilityCache]
+    () => selectAdsWithDiversity(adBreaks, user, adInventory, parsedPlacementConfig, eligibilityCache),
+    [adBreaks, user, adInventory, parsedPlacementConfig, eligibilityCache]
   );
   const selectedInsertions = useMemo<PlannedInsertion[]>(
     () =>
@@ -131,22 +156,26 @@ export default function GeneratedVideoPreviewPage() {
     [plan]
   );
 
-  // Manifest download blob — must be client-only (URL.createObjectURL isn't available on server)
-  const [manifestHref, setManifestHref] = useState<string>("#");
-  useEffect(() => {
-    const payload = {
+  // Manifest JSON — shared by preview UI and download blob (must stay identical)
+  const manifestPayload = useMemo(
+    () => ({
       sourceVideoId: videoId,
       sourceVideoUrl: hlsUrl || "",
       user: user.name,
       generatedAt: new Date().toISOString(),
       adInsertions: selectedInsertions,
-    };
-    const href = URL.createObjectURL(
-      new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" })
-    );
+    }),
+    [videoId, hlsUrl, user.name, selectedInsertions]
+  );
+  const manifestJson = useMemo(() => JSON.stringify(manifestPayload, null, 2), [manifestPayload]);
+  const [isManifestModalOpen, setIsManifestModalOpen] = useState(false);
+
+  const [manifestHref, setManifestHref] = useState<string>("#");
+  useEffect(() => {
+    const href = URL.createObjectURL(new Blob([manifestJson], { type: "application/json" }));
     setManifestHref(href);
     return () => URL.revokeObjectURL(href);
-  }, [videoId, hlsUrl, user.name, selectedInsertions]);
+  }, [manifestJson]);
 
   // ── HLS setup — runs when hlsUrl becomes available ─────────
   // The <video> element is always in the DOM (no early-return), so
@@ -157,7 +186,7 @@ export default function GeneratedVideoPreviewPage() {
     mainHlsRef.current?.destroy();
     mainHlsRef.current = null;
     if (Hls.isSupported() && hlsUrl.includes(".m3u8")) {
-      const hls = new Hls({ enableWorker: false });
+      const hls = new Hls(hlsClientConfig());
       hls.loadSource(hlsUrl);
       hls.attachMedia(el);
       mainHlsRef.current = hls;
@@ -311,6 +340,10 @@ export default function GeneratedVideoPreviewPage() {
           <a
             href={manifestHref}
             download={`generated-plan-${videoId}.json`}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsManifestModalOpen(true);
+            }}
             className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 inline-flex items-center gap-1.5"
           >
             <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M6 1.5v6M3.5 5.5L6 8l2.5-2.5M2 9.5h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -318,6 +351,75 @@ export default function GeneratedVideoPreviewPage() {
           </a>
         </div>
       </div>
+
+      {isManifestModalOpen && (
+        <div
+          className="fixed inset-0 z-180 mt-0! bg-black/45 backdrop-blur-[2px] p-4 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="plan-download-title"
+        >
+          <div className="w-full max-w-[860px] max-h-[90vh] rounded-2xl border border-border-light bg-white shadow-2xl overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-border-light flex items-center justify-between gap-4 shrink-0">
+              <div>
+                <h2 id="plan-download-title" className="text-base font-semibold text-text-primary">
+                  Confirm plan download
+                </h2>
+                <p className="text-xs text-text-tertiary mt-1">
+                  Review the generated JSON before downloading.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsManifestModalOpen(false)}
+                className="p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors"
+                aria-label="Close"
+              >
+                <svg viewBox="0 0 12 12" fill="none" className="w-4 h-4">
+                  <path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-4 overflow-y-auto flex-1 space-y-3">
+              <p className="text-xs text-text-tertiary leading-relaxed">
+                This preview matches the exact file that will be downloaded.
+              </p>
+              {isLoading ? (
+                <div className="rounded-xl border border-border-light bg-gray-50 px-4 py-10 flex flex-col items-center justify-center gap-2">
+                  <svg className="w-5 h-5 animate-spin text-text-tertiary" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="14 8" />
+                  </svg>
+                  <span className="text-[12px] text-text-tertiary">Building plan JSON…</span>
+                </div>
+              ) : (
+                <OverviewCodeBlock filename={`generated-plan-${videoId}.json`} language="json" code={manifestJson} />
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-border-light bg-white flex items-center justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsManifestModalOpen(false)}
+                className="px-3 py-2 rounded-lg border border-border-light text-sm font-medium text-text-secondary hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <a
+                href={manifestHref}
+                download={`generated-plan-${videoId}.json`}
+                onClick={() => setIsManifestModalOpen(false)}
+                className="px-3 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 inline-flex items-center gap-1.5"
+              >
+                <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
+                  <path d="M6 1.5v6M3.5 5.5L6 8l2.5-2.5M2 9.5h8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Download
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error banner */}
       {dataError && (
@@ -337,11 +439,17 @@ export default function GeneratedVideoPreviewPage() {
               ref={mainVideoRef}
               className={`w-full h-full object-contain transition-opacity duration-200 ${adPlayback ? "opacity-0" : "opacity-100"}`}
               playsInline
+              controlsList="nodownload noplaybackrate noremoteplayback"
+              disablePictureInPicture
+              disableRemotePlayback
             />
             <video
               ref={adVideoRef}
               className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-200 ${adPlayback ? "opacity-100" : "opacity-0 pointer-events-none"}`}
               playsInline
+              controlsList="nodownload noplaybackrate noremoteplayback"
+              disablePictureInPicture
+              disableRemotePlayback
             />
 
             {/* Loading overlay */}
@@ -505,7 +613,15 @@ export default function GeneratedVideoPreviewPage() {
                           <p className="text-[10px] text-text-tertiary truncate">{entry.selectedAd.ad.brand}</p>
                         </div>
                         <div className="bg-black flex-1 min-h-[120px]">
-                          <video src={entry.selectedAd.ad.asset_url} controls className="w-full h-full object-contain" preload="metadata" />
+                          <video
+                            src={entry.selectedAd.ad.asset_url}
+                            controls
+                            controlsList="nodownload noplaybackrate noremoteplayback"
+                            disablePictureInPicture
+                            disableRemotePlayback
+                            className="w-full h-full object-contain"
+                            preload="metadata"
+                          />
                         </div>
                       </>
                     ) : (

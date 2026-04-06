@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
     const body = await request.json();
+    if (!body || typeof body !== "object") {
+        return NextResponse.json({ error: "Invalid upload body" }, { status: 400 });
+    }
 
     try {
         const jsonResponse = await handleUpload({

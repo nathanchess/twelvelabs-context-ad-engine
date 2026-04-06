@@ -6,15 +6,19 @@ const tl_client = new TwelveLabs({
 })
 
 export async function POST(request) {
-
     const { query, indexName } = await request.json()
 
     if (!query) {
         return NextResponse.json({ error: "Query is required" }, { status: 400 })
     }
+    if (String(query).length > 300) {
+        return NextResponse.json({ error: "Query too long (max 300 chars)" }, { status: 400 })
+    }
 
-    // Caller can pass an explicit indexName; fall back to env var or the ad index
-    const targetName = indexName || process.env.TL_INDEX_NAME || "tl-context-engine-ads";
+    // Restrict searchable indexes to known app indexes only.
+    const allowed = new Set(["tl-context-engine-ads", "tl-context-engine-videos"]);
+    const requestedIndex = indexName || "tl-context-engine-ads";
+    const targetName = allowed.has(requestedIndex) ? requestedIndex : "tl-context-engine-ads";
     console.log('[Search] Looking for TwelveLabs index:', targetName);
 
     const indexPager = await tl_client.indexes.list()

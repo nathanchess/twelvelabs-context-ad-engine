@@ -72,7 +72,7 @@ export interface CastMember {
   description: string;
 }
 
-// ── Mock User ────────────────────────────────────────────────
+// ── Demo viewer personas (not real users; used for affinity simulation) ──
 
 export interface MockUser {
   id: string;

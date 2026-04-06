@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Hls from "hls.js";
+import { hlsClientConfig } from "../../../lib/hlsClientConfig";
 import { getCategoryBySlug, type AdCategory } from "../../../lib/adInventoryStore";
 import { useVideos, type CachedVideo } from "../../../lib/videoCache";
 import { X, Clock, FileText, Database, Download, Cpu, Users, UserX } from "lucide-react";
@@ -448,7 +449,7 @@ Return ONLY valid JSON, no markdown fences.`;
         const hlsUrl = video?.hls?.videoUrl;
         if (!el || !hlsUrl) return;
         if (Hls.isSupported() && hlsUrl.includes(".m3u8")) {
-            const hls = new Hls({ enableWorker: false });
+            const hls = new Hls(hlsClientConfig());
             hls.loadSource(hlsUrl);
             hls.attachMedia(el);
             hlsRef.current = hls;
@@ -634,7 +635,15 @@ Return ONLY valid JSON, no markdown fences.`;
                     <div className="lg:col-span-3">
                         <div ref={playerContainerRef} className="rounded-2xl overflow-hidden bg-white border border-border-light shadow-sm">
                             <div className="relative aspect-video cursor-pointer" onClick={togglePlay}>
-                                <video ref={videoRef} playsInline className="w-full h-full object-cover" poster={thumbnailUrl} />
+                                <video
+                                  ref={videoRef}
+                                  playsInline
+                                  controlsList="nodownload noplaybackrate noremoteplayback"
+                                  disablePictureInPicture
+                                  disableRemotePlayback
+                                  className="w-full h-full object-cover"
+                                  poster={thumbnailUrl}
+                                />
                                 {!isPlaying && (
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                                         <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
@@ -1152,44 +1161,59 @@ Return ONLY valid JSON, no markdown fences.`;
                     )}
                 </div>
 
-                {/* Databricks Contextual Lift Panel */}
+                {/* Databricks Contextual Lift Panel — benchmarks cited from Agility Ads (2025) */}
                 <div className="mt-8">
                     <h2 className="text-sm font-semibold text-text-primary mb-1 flex items-center gap-2">
                         <img src="/databricks.png" alt="Databricks" className="h-4 object-contain" />
                         Databricks Contextual Lift
                     </h2>
-                    <p className="text-xs text-text-tertiary mb-4 tracking-wide leading-relaxed">
-                        <span className="font-semibold text-gray-500">Note: </span>
-                        For the sake of this localized demo, this is simulated baseline data. In production, this panel queries your live Databricks Delta Tables where the player&apos;s impression logs are joined with the TwelveLabs scene IDs. That allows your data science team to generate these exact lift reports in real-time.
+                    <p className="text-xs text-text-tertiary mb-3 tracking-wide leading-relaxed">
+                        <span className="font-semibold text-text-secondary">Agility Ads (2025 Contextual Advertising Report): </span>
+                        Their research found that AI-driven contextual ads deliver{" "}
+                        <span className="font-medium text-text-primary">30% higher conversion rates and performance</span>{" "}
+                        compared to non-contextual alternatives, and that contextual targeting can boost{" "}
+                        <span className="font-medium text-text-primary">purchase intent by 63%</span>.
+                        Multimodal scene-level matching with TwelveLabs is designed to sit in that same contextual class; when you wire this dashboard to production data, measured lift should be compared against these enterprise benchmarks.
+                    </p>
+                    <p className="text-xs text-text-tertiary mb-4 leading-relaxed">
+                        In production, this panel can query your live Databricks Delta Tables where player impression logs are joined with TwelveLabs scene IDs so your data science team can track completion, conversion, and intent lift in real time.
                     </p>
                     <div className="rounded-xl border border-border-light overflow-hidden shadow-sm">
                         <table className="w-full text-left text-xs border-collapse bg-white">
                             <thead>
                                 <tr className="bg-gray-50 border-b border-border-light text-text-secondary">
-                                    <th className="px-5 py-3 font-semibold whitespace-nowrap">Delivery Strategy</th>
-                                    <th className="px-5 py-3 font-semibold whitespace-nowrap">Completion Rate</th>
-                                    <th className="px-5 py-3 font-semibold whitespace-nowrap text-right">Lift</th>
+                                    <th className="px-5 py-3 font-semibold">Context (Agility Ads, 2025)</th>
+                                    <th className="px-5 py-3 font-semibold text-right">Reported outcome</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-light">
                                 <tr>
-                                    <td className="px-5 py-3 text-text-primary font-medium">Run of Network (Random)</td>
-                                    <td className="px-5 py-3 text-text-secondary font-medium">68%</td>
-                                    <td className="px-5 py-3 text-right text-text-tertiary font-medium">—</td>
+                                    <td className="px-5 py-3 text-text-primary font-medium">AI-driven contextual vs non-contextual alternatives</td>
+                                    <td className="px-5 py-3 text-right text-text-primary font-semibold">+30% conversion / performance</td>
                                 </tr>
                                 <tr className="bg-mb-green-light/10">
-                                    <td className="px-5 py-3 text-mb-green-dark font-semibold">TwelveLabs Contextual Match</td>
-                                    <td className="px-5 py-3 text-text-primary font-bold">91%</td>
+                                    <td className="px-5 py-3 text-mb-green-dark font-semibold">Contextual targeting — purchase intent</td>
                                     <td className="px-5 py-3 text-right">
                                         <span className="inline-flex items-center gap-1 font-bold text-mb-green-dark">
                                             <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M6 10V2M2 6l4-4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                            +33%
+                                            +63%
                                         </span>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <p className="mt-3 text-xs">
+                        <a
+                            href="https://agilityads.com/blog/contextual-advertising-in-2025-the-future-of-privacy-first-digital-marketing"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-mb-green-dark hover:underline"
+                        >
+                            Read the Agility Ads Report
+                        </a>
+                        <span className="text-text-tertiary"> — overview of 2025 contextual advertising trends and measurement.</span>
+                    </p>
                 </div>
             </div>
         </div>

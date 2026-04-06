@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10gb',
     },
   },
-  serverExternalPackages: ['twelvelabs-js'],
+  serverExternalPackages: ['twelvelabs-js', '@databricks/sql'],
 };
 
 export default nextConfig;

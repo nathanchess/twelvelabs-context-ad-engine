@@ -52,7 +52,7 @@ const cast_response_format = {
    ═══════════════════════════════════════════════════════════ */
 
 function buildChunkPrompt(castList, startSec, endSec, isFirstChunk) {
-    const castBlock = castList.map(c => `  - ${c.name} (${c.role}): ${c.description}`).join("\n");
+    const castBlock = castList.map(c => `  - ${c.name}: ${c.description}`).join("\n");
 
     return `
     You are a broadcast ad-ops analyst for a premium CTV platform.
@@ -119,7 +119,7 @@ const segment_chunk_response_format = {
                 type: "object",
                 properties: {
                     start_time: { type: "number", description: "Segment start in seconds" },
-                    end_time:   { type: "number", description: "Segment end in seconds" },
+                    end_time: { type: "number", description: "Segment end in seconds" },
                     scene_context: { type: "string", description: "One concise sentence describing the scene, referencing cast by name" },
                     environment: {
                         type: "string",
@@ -245,9 +245,11 @@ export async function POST(request) {
             }
         }
 
-        const totalDuration = (typeof clientDuration === "number" && clientDuration > 0)
-            ? clientDuration
-            : 7200; // fallback: 2-hour ceiling
+        if (!clientDuration) {
+            return NextResponse.json({ error: "Video duration is required" }, { status: 400 });
+        }
+
+        const totalDuration = clientDuration
 
         console.log(`[generateAdPlan] Starting two-pass analysis for ${videoId} (duration=${totalDuration}s)`);
 

@@ -9,10 +9,7 @@ const tl_client = new TwelveLabs({
 })
 
 export async function POST(request) {
-
     const { videoId, prompt, response_format } = await request.json()
-
-    console.log(`[DEBUG] ${prompt}`)
 
     if (!videoId) {
         return NextResponse.json({ error: "Video ID is required" }, { status: 400 })
@@ -20,6 +17,9 @@ export async function POST(request) {
 
     if (!prompt) {
         return NextResponse.json({ error: "Prompt is required" }, { status: 400 })
+    }
+    if (String(prompt).length > 12000) {
+        return NextResponse.json({ error: "Prompt too long" }, { status: 400 })
     }
 
     const parameters = {

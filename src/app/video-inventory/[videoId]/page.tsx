@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Hls from "hls.js";
+import { hlsClientConfig } from "../../lib/hlsClientConfig";
 import { useVideos } from "../../lib/videoCache";
 import {
   identifyAdBreaks,
@@ -107,7 +108,7 @@ function AdPreviewModal({
     if (!el) return;
     const url = ad.ad.asset_url;
     if (Hls.isSupported() && url.includes(".m3u8")) {
-      const hls = new Hls({ enableWorker: false });
+      const hls = new Hls(hlsClientConfig());
       hls.loadSource(url);
       hls.attachMedia(el);
       modalHlsRef.current = hls;
@@ -162,7 +163,15 @@ function AdPreviewModal({
           </button>
         </div>
         <div className="bg-black aspect-video">
-          <video ref={modalVideoRef} className="w-full h-full object-contain" playsInline preload="metadata" />
+          <video
+            ref={modalVideoRef}
+            className="w-full h-full object-contain"
+            playsInline
+            controlsList="nodownload noplaybackrate noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
+            preload="metadata"
+          />
         </div>
         <div className="px-5 py-3 border-t border-border-light bg-white">
           <div className="flex items-center gap-2">
@@ -562,6 +571,9 @@ export default function VideoInventoryDetailPage() {
   const [showDisqualified, setShowDisqualified] = useState(false);
   const [previewAd, setPreviewAd] = useState<AdRankResult | null>(null);
 
+  /* Main HLS instance ref — persists across renders so URL changes are the only teardown trigger */
+  const mainHlsRef = useRef<Hls | null>(null);
+
   /* Ad playback intercept */
   const adVideoRef = useRef<HTMLVideoElement | null>(null);
   const adHlsRef = useRef<Hls | null>(null);
@@ -620,41 +632,60 @@ export default function VideoInventoryDetailPage() {
     !!topRankedEligible &&
     selectedByDiversity.ad.id !== topRankedEligible.ad.id;
 
-  /* HLS setup */
+  /* Stable HLS URL — only changes when the actual stream URL changes */
+  const hlsUrl = video?.hls?.videoUrl ?? null;
+
+  /* HLS setup — depends only on hlsUrl string, not the full video object */
   useEffect(() => {
     const el = videoRef.current;
-    const hlsUrl = video?.hls?.videoUrl;
     if (!el || !hlsUrl) return;
+
+    // Destroy previous instance if URL changed
+    mainHlsRef.current?.destroy();
+    mainHlsRef.current = null;
+
     if (Hls.isSupported() && hlsUrl.includes(".m3u8")) {
-      const hls = new Hls({ enableWorker: false });
+      const hls = new Hls(hlsClientConfig());
       hls.loadSource(hlsUrl);
       hls.attachMedia(el);
-      return () => { hls.destroy(); };
+      mainHlsRef.current = hls;
     } else {
       el.src = hlsUrl;
     }
-  }, [video]);
+    return () => {
+      mainHlsRef.current?.destroy();
+      mainHlsRef.current = null;
+    };
+  }, [hlsUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* Track playback */
+  /* Track playback — only re-binds when video element or segments change, NOT on volume/mute */
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
     const onTime = () => {
       setVideoTime(el.currentTime);
-      if (segments) {
-        const idx = segments.findIndex((s) => el.currentTime >= s.start_time && el.currentTime < s.end_time);
+      const segs = segmentsRef.current;
+      if (segs) {
+        const idx = segs.findIndex((s) => el.currentTime >= s.start_time && el.currentTime < s.end_time);
         setActiveSegmentIdx(idx >= 0 ? idx : null);
       }
     };
     const onDur = () => setVideoDuration(el.duration);
-    const onPlay = () => { setIsPlaying(true); el.volume = isMuted ? 0 : volume; };
+    const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
     el.addEventListener("timeupdate", onTime);
     el.addEventListener("loadedmetadata", onDur);
     el.addEventListener("play", onPlay);
     el.addEventListener("pause", onPause);
-    return () => { el.removeEventListener("timeupdate", onTime); el.removeEventListener("loadedmetadata", onDur); el.removeEventListener("play", onPlay); el.removeEventListener("pause", onPause); };
-  }, [video, segments, volume, isMuted]);
+    return () => {
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("loadedmetadata", onDur);
+      el.removeEventListener("play", onPlay);
+      el.removeEventListener("pause", onPause);
+    };
+  }, [hlsUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Player controls */
   const togglePlay = useCallback(() => { if (!videoRef.current) return; if (isPlaying) videoRef.current.pause(); else videoRef.current.play().catch(() => {}); }, [isPlaying]);
@@ -791,14 +822,12 @@ export default function VideoInventoryDetailPage() {
     if (!el) return;
 
     const url = adPlaybackState.adUrl;
-    if (Hls.isSupported() && url.includes(".m3u8")) {
-      const hls = new Hls({ enableWorker: false });
-      hls.loadSource(url);
-      hls.attachMedia(el);
-      adHlsRef.current = hls;
-    } else {
-      el.src = url;
-    }
+    // Ads are loaded via native media requests to avoid HLS.js XHR CORS preflight issues
+    // from CloudFront streams that do not expose Access-Control-Allow-Origin for localhost.
+    adHlsRef.current?.destroy();
+    adHlsRef.current = null;
+    el.src = url;
+    el.load();
     el.play().catch(() => {});
 
     const onEnded = () => {
@@ -882,7 +911,7 @@ export default function VideoInventoryDetailPage() {
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setShowProfileMenu(false)} />
                   <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-border-light py-1.5 z-40 overflow-hidden">
-                    <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Viewer Profile</p>
+                    <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Viewer profile (demo)</p>
                     {MOCK_USERS.map((user) => (
                       <div key={user.id} className={`relative w-full px-3 py-2 flex items-center gap-2.5 text-[12px] transition-colors cursor-pointer select-none ${selectedUserId === user.id ? "bg-gray-50 text-text-primary font-medium" : "text-text-secondary hover:bg-gray-50"}`} onClick={() => { setSelectedUserId(user.id); setShowProfileMenu(false); }} role="option" aria-selected={selectedUserId === user.id}>
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${selectedUserId === user.id ? "bg-gray-900 text-white" : "bg-gray-100 text-text-secondary"}`}>{user.name.charAt(0)}</div>
@@ -906,7 +935,7 @@ export default function VideoInventoryDetailPage() {
               Config
             </button>
             <Link
-              href={`/video-inventory/${videoId}/generate?user=${selectedUserId}`}
+              href={`/video-inventory/${videoId}/generate?user=${selectedUserId}&safetyMode=${placementConfig.safetyMode}&maxBreaks=${placementConfig.maxBreaks}&minSpacingSeconds=${placementConfig.minSpacingSeconds}&minSegmentDuration=${placementConfig.minSegmentDuration}`}
               className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-900 bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
             >
               <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 6h8M6 2v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
@@ -983,12 +1012,23 @@ export default function VideoInventoryDetailPage() {
                 <div ref={playerContainerRef} className="rounded-2xl overflow-hidden bg-white border border-border-light shadow-sm">
                   <div className="relative aspect-video bg-black" onClick={adPlaybackState ? undefined : togglePlay} style={{ cursor: adPlaybackState ? "default" : "pointer" }}>
                     {/* Main content video */}
-                    <video ref={videoRef} playsInline className="w-full h-full object-contain" poster={thumbnailUrl} />
+                    <video
+                      ref={videoRef}
+                      playsInline
+                      controlsList="nodownload noplaybackrate noremoteplayback"
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      className="w-full h-full object-contain"
+                      poster={thumbnailUrl}
+                    />
 
                     {/* Ad video — always mounted so ref is available, hidden when not active */}
                     <video
                       ref={adVideoRef}
                       playsInline
+                      controlsList="nodownload noplaybackrate noremoteplayback"
+                      disablePictureInPicture
+                      disableRemotePlayback
                       className={`absolute inset-0 w-full h-full object-contain bg-black transition-opacity duration-300 ${adPlaybackState ? "opacity-100 z-20" : "opacity-0 -z-10 pointer-events-none"}`}
                     />
 
@@ -1304,7 +1344,17 @@ export default function VideoInventoryDetailPage() {
                               <div className="rounded-md border border-amber-200 bg-white/70 p-2">
                                 <p className="text-[9px] uppercase tracking-wide text-amber-700 font-semibold mb-1">Selected Ad</p>
                                 <div className="rounded bg-black overflow-hidden h-36">
-                                  <video className="w-full h-full object-cover" src={selectedByDiversity.ad.asset_url} controls muted playsInline preload="metadata" />
+                                  <video
+                                    className="w-full h-full object-cover"
+                                    src={selectedByDiversity.ad.asset_url}
+                                    controls
+                                    controlsList="nodownload noplaybackrate noremoteplayback"
+                                    disablePictureInPicture
+                                    disableRemotePlayback
+                                    muted
+                                    playsInline
+                                    preload="metadata"
+                                  />
                                 </div>
                                 <p className="text-[10px] text-amber-900 mt-1 truncate">{selectedByDiversity.ad.proposedTitle || selectedByDiversity.ad.brand}</p>
                               </div>
@@ -1312,7 +1362,17 @@ export default function VideoInventoryDetailPage() {
                                 <div className="rounded-md border border-amber-200 bg-white/70 p-2">
                                   <p className="text-[9px] uppercase tracking-wide text-amber-700 font-semibold mb-1">Top Ranked (Suppressed)</p>
                                   <div className="rounded bg-black overflow-hidden h-36">
-                                    <video className="w-full h-full object-cover" src={topRankedEligible.ad.asset_url} controls muted playsInline preload="metadata" />
+                                    <video
+                                      className="w-full h-full object-cover"
+                                      src={topRankedEligible.ad.asset_url}
+                                      controls
+                                      controlsList="nodownload noplaybackrate noremoteplayback"
+                                      disablePictureInPicture
+                                      disableRemotePlayback
+                                      muted
+                                      playsInline
+                                      preload="metadata"
+                                    />
                                   </div>
                                   <p className="text-[10px] text-amber-900 mt-1 truncate">{topRankedEligible.ad.proposedTitle || topRankedEligible.ad.brand}</p>
                                 </div>
