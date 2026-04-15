@@ -168,7 +168,7 @@ export const MOCK_USERS: MockUser[] = [
   {
     id: "nathan",
     name: "Nathan",
-    demographics: ["Male", "24", "College Student", "Urban", "HHI $45K+"],
+    demographics: ["Male", "19", "College Student", "Urban", "HHI $45K+"],
     interest_signals: [
       "Gaming", "Video Games", "Esports", "Fast Food", "QSR",
       "Music", "Concerts", "Entertainment", "Movies",
@@ -186,12 +186,7 @@ export const MOCK_USERS: MockUser[] = [
       financial_services: 0.50,
     },
     content_preferences: ["Action", "Comedy", "Anime", "Sports", "Gaming"],
-    exclusion_categories: [
-      "alcohol_premium",
-      "alcohol_beer",
-      "sports_betting",
-      "pharmaceutical",
-    ],
+    exclusion_categories: [],
     viewing_context: { device_type: "mobile", typical_daypart: "late_night" },
     engagement_tier: "medium",
     dma_region: "Los Angeles",

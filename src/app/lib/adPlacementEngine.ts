@@ -885,8 +885,9 @@ function isAgeMatch(adTag: string, userTag: string): boolean {
     if (DECADE_PATTERN.test(user)) return true;
   }
   if (UNDERAGE_TERMS.includes(ad)) {
-    if (UNDERAGE_TERMS.includes(user)) return true;
-    if (age !== null && age < 21) return true;
+    // Temporary override: do not treat Teenagers/Underage demographic tags
+    // as broad negative blockers for non-alcohol categories.
+    return false;
   }
 
   const adDecade = ad.match(DECADE_PATTERN);
@@ -1048,11 +1049,20 @@ export function scoreAdUserEligibility(
   const adTargetDemos = ad.targetDemographics ?? [];
   const adNegativeDemos = ad.negativeDemographics ?? [];
   const adCohortAffinities = ad.cohort_affinities ?? [];
+  const ageInfo = inferAgeBand(userDemographics);
+  const userAge = ageInfo?.band === "exact" ? ageInfo.value : null;
 
   // GATE 0: Hard Exclusions
   if (adCategoryKey && userExclusions.includes(adCategoryKey)) {
     reasoning.push(
       `EXCLUDED: "${adCategoryKey}" is blocked for ${user.name} (compliance: ${userExclusions.join(", ")})`
+    );
+    return { isEligible: false, score: 0, reasoning, scores };
+  }
+
+  if (userAge !== null && userAge < 21 && adCategoryKey.startsWith("alcohol")) {
+    reasoning.push(
+      `EXCLUDED: "${adCategoryKey}" is blocked for ${user.name} (under-21 alcohol policy).`
     );
     return { isEligible: false, score: 0, reasoning, scores };
   }

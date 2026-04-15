@@ -149,8 +149,9 @@ function isAgeMatch(adTag, userTag) {
     }
 
     if (UNDERAGE_TERMS.includes(ad)) {
-        if (UNDERAGE_TERMS.includes(user)) return true;
-        if (age !== null && age < 21) return true;
+        // Temporary override: do not use Teenagers/Underage demographic tags
+        // as broad blockers. Alcohol under-21 policy is handled separately.
+        return false;
     }
 
     const adDecade = ad.match(DECADE_PATTERN);
@@ -224,12 +225,22 @@ function scoreAdUserEligibility(user, ad) {
     const adTargetDemos = Array.isArray(ad?.targetDemographics) ? ad.targetDemographics : [];
     const adNegativeDemos = Array.isArray(ad?.negativeDemographics) ? ad.negativeDemographics : [];
     const adCohortAffinities = Array.isArray(ad?.cohort_affinities) ? ad.cohort_affinities : [];
+    const ageInfo = inferAgeBand(userDemographics);
+    const userAge = ageInfo?.band === "exact" ? ageInfo.value : null;
 
     // GATE 0: Hard Exclusions
     if (adCategoryKey && userExclusions.includes(adCategoryKey)) {
         reasoning.push(
             `EXCLUDED: "${adCategoryKey}" is blocked for ${user?.name || "viewer"} ` +
             `(compliance: ${userExclusions.join(", ")})`
+        );
+        return { isEligible: false, score: 0, reasoning, scores, bestSegment: null };
+    }
+
+    if (userAge !== null && userAge < 21 && adCategoryKey.startsWith("alcohol")) {
+        reasoning.push(
+            `EXCLUDED: "${adCategoryKey}" is blocked for ${user?.name || "viewer"} ` +
+            `(under-21 alcohol policy).`
         );
         return { isEligible: false, score: 0, reasoning, scores, bestSegment: null };
     }
