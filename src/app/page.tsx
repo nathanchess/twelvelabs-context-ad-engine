@@ -227,7 +227,7 @@ export default function Home() {
             <svg viewBox="0 0 10 10" fill="none" className="w-3 h-3 opacity-60"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </a>
           <a
-            href="https://github.com/nathanchess/paramount-context-ad-engine"
+            href="https://github.com/nathanchess/twelvelabs-context-ad-engine/tree/main"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-black hover:rounded-2xl transition-all duration-200"

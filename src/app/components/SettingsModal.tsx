@@ -8,7 +8,7 @@ interface SettingsModalProps {
 /** README / deploy docs; override with NEXT_PUBLIC_GITHUB_SOURCE_URL if the repo moves */
 const DEFAULT_SOURCE_REPO =
     process.env.NEXT_PUBLIC_GITHUB_SOURCE_URL ||
-    "https://github.com/nathanchess/paramount-context-ad-engine";
+    "https://github.com/nathanchess/twelvelabs-context-ad-engine/tree/main";
 
 /**
  * API credentials are not collected in the browser. Copy explains internal TwelveLabs ownership
