@@ -4,7 +4,7 @@
 
 A full-stack contextual ad placement engine for broadcast and streaming content. Upload video footage, let TwelveLabs' AI models analyze every scene, and watch the engine intelligently rank ads by scene fit, viewer affinity, and brand safety — all in real time. Ad metadata and Marengo multimodal embeddings can be exported directly to Databricks Delta tables for downstream Mosaic AI Vector Search indexing.
 
-**Live demo repo:** [github.com/nathanchess/paramount-context-ad-engine](https://github.com/nathanchess/paramount-context-ad-engine)
+**Live Demo Application:** [https://twelvelabs-contextual-ads.vercel.app/]
 
 ---
 
@@ -35,7 +35,7 @@ A full-stack contextual ad placement engine for broadcast and streaming content.
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/nathanchess/paramount-context-ad-engine.git
+git clone https://github.com/nathanchess/twelvelabs-context-ad-engine.git
 cd contextual-ad-engine
 npm install
 ```
@@ -359,10 +359,4 @@ Or deploy to Vercel — all environment variables (including `DATABRICKS_*`) nee
 
 ---
 
-## License
-
-
-
----
-
-*Built by Nathan Che · Powered by [TwelveLabs](https://www.twelvelabs.io) · Data platform by [Databricks](https://databricks.com)*
+*Built by Nathan Che · Powered by [TwelveLabs](https://www.twelvelabs.io)*
