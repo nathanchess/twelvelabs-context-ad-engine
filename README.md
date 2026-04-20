@@ -8,6 +8,14 @@ A full-stack contextual ad placement engine for broadcast and streaming content.
 
 ---
 
+## Architecture Overview
+
+![Architecture Diagram](./public/Architecture.png)
+
+[View architecture in full screen (Lucidchart)](https://lucid.app/lucidchart/ef8d11e1-3f00-4bf0-b411-ab8e3bb3606b/edit?view_items=o97PhyrSgvaW%2Cyc8PiHljiUJe%2CD_7PDd.qF_w~%2CUh8PfmArC9R3%2Cgr8PjOz-iagi%2C-u8PfT3QVmS1%2COk8PFHaFqYe5%2CUj8PTZaGtt3P%2C6z8PX_fhmaE8%2CAN8PxOhZuzK-%2C0N8P32C~nzbK%2CoQ8PNkmzbcNI%2CBQ8P70VmeSOz%2C0N8PiNmrzY.o%2C0N8P5JYxcZ3Z%2C0N8PcvJGj~YA%2C0N8PAghTJfLr%2C0N8PNwKd5Cer%2C0N8P7ZQJkL5k%2C0N8P1P9s-s8g%2CBy8P8HKsplEp%2C-y8PC8hX52xj%2Cux8PV37i~0Bz%2C8x8P6biPsTC4%2CVx8Pvj2yoMg7%2Cuz8PB9v8U2~o%2Cwz8PkQRStyhT%2C0N8PPFxVCJfI%2Cw97PAN.GCjSP%2C5a8PobQdNG8C%2CZj8PDP9VmazD%2CON8PLiaeNf4n%2C6z8PPERmzORN%2Cpv8Pu3fnl9ib%2CBj8PQVmqVxYI%2CPr8PFA4giQX9%2Cfo8PU5izetbk%2CM_7PeRh-oBjv%2C0h8PZqnkdim4%2C4j8PblhJtVSw%2CuQ8PeQHU0Icd%2CxQ8PWNynGcvq%2CbA8Pz~9cV5Cs%2Cym8PRF9Y6gG7%2Cvr8PzYJ5LtX4%2CBu8PNideLDRC%2CKN8PBxiACflG%2C7N8PCwevxQbp&page=0_0&invitationId=inv_09de1972-142b-4369-9df4-f91eb3f5a949)
+
+---
+
 ## What It Does
 
 | Feature | Description |
@@ -188,14 +196,6 @@ src/app/
     ├── SettingsModal.tsx             # Global settings
     └── VideoInventoryUploadModal.tsx # Upload modal (video inventory)
 ```
-
----
-
-## Architecture Overview
-
-![Architecture Diagram](./public/Architecture.png)
-
-[View architecture in full screen (Lucidchart)](https://lucid.app/lucidchart/ef8d11e1-3f00-4bf0-b411-ab8e3bb3606b/edit?view_items=o97PhyrSgvaW%2Cyc8PiHljiUJe%2CD_7PDd.qF_w~%2CUh8PfmArC9R3%2Cgr8PjOz-iagi%2C-u8PfT3QVmS1%2COk8PFHaFqYe5%2CUj8PTZaGtt3P%2C6z8PX_fhmaE8%2CAN8PxOhZuzK-%2C0N8P32C~nzbK%2CoQ8PNkmzbcNI%2CBQ8P70VmeSOz%2C0N8PiNmrzY.o%2C0N8P5JYxcZ3Z%2C0N8PcvJGj~YA%2C0N8PAghTJfLr%2C0N8PNwKd5Cer%2C0N8P7ZQJkL5k%2C0N8P1P9s-s8g%2CBy8P8HKsplEp%2C-y8PC8hX52xj%2Cux8PV37i~0Bz%2C8x8P6biPsTC4%2CVx8Pvj2yoMg7%2Cuz8PB9v8U2~o%2Cwz8PkQRStyhT%2C0N8PPFxVCJfI%2Cw97PAN.GCjSP%2C5a8PobQdNG8C%2CZj8PDP9VmazD%2CON8PLiaeNf4n%2C6z8PPERmzORN%2Cpv8Pu3fnl9ib%2CBj8PQVmqVxYI%2CPr8PFA4giQX9%2Cfo8PU5izetbk%2CM_7PeRh-oBjv%2C0h8PZqnkdim4%2C4j8PblhJtVSw%2CuQ8PeQHU0Icd%2CxQ8PWNynGcvq%2CbA8Pz~9cV5Cs%2Cym8PRF9Y6gG7%2Cvr8PzYJ5LtX4%2CBu8PNideLDRC%2CKN8PBxiACflG%2C7N8PCwevxQbp&page=0_0&invitationId=inv_09de1972-142b-4369-9df4-f91eb3f5a949)
 
 ---
 
