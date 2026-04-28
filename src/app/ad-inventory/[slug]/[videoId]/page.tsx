@@ -397,24 +397,24 @@ export default function AdVideoDetailPage() {
             const iabBlock = formatIabTableForPrompt(categoryKey, categoryLabel);
 
             const prompt = `Analyze this ad video. Return a JSON object with these exact keys:
-- "summary": 2-3 sentence description of what the ad shows and its message
-- "company": the brand or company featured in this ad
-- "proposedTitle": a compelling, concise ad title
-- "recommendedContexts": array of 3-5 literal visual and audio scene tags that you can actually see or hear (e.g., "Beach", "Sunny Sky", "Cocktails", "Friends Laughing"). Do not use abstract concepts.
-- "negativeCampaignContexts": array of 2-3 negative campaign contexts or settings to avoid for this specific ad (e.g. "Indoor Settings", "Negative Reviews", "Gloomy Weather").
-- "brandSafetyGARM": array of 1-3 strictly defined GARM (Global Alliance for Responsible Media) brand safety exclusions present or bordering in this video. Only use terms like: "Violence", "Underage", "Hate Speech", "Tragedy", "Crime", "Drugs", "Adult Content". If absolutely clean, return [].
-- "targetDemographics": array of 2-4 strings describing the target age, gender, and household income (e.g., "Male", "30s", "HHI $100K+").
-- "negativeDemographics": array of 1-3 strings describing demographics who should NOT see this ad (e.g., "Teenagers", "Underage").
-- "targetAudience": Object with 3 string arrays: "highPriority" (2-3 items), "mediumPriority" (1-2 items), and "lowPriority" (1-2 items). These are target audience affinities (e.g., Luxury, Spirits, Gen-Z).
-- "timelineMarkers": array of 3-6 objects with { "timestampSec": number, "label": short label, "reasoning": why this moment is relevant for ad targeting }
-- "iab": array of 2-6 objects. Each object MUST be one of the allowed rows below (identical "tier1", "tier2", optional "tier3", and "code" strings). Include "confidence": number from 0 to 1 per row. Never use IAB codes or tier labels that are not in the allowed list.
-- "iabTopTier1": array of top 1-3 tier1 labels copied from your chosen iab rows (must match those rows exactly)
-- "iabTopTier2": array of top 2-5 tier2 labels copied from your chosen iab rows (must match those rows exactly)
-- "iabTopTier3": array of top 0-5 tier3 labels copied from your chosen iab rows when available (must match those rows exactly)
+            - "summary": 2-3 sentence description of what the ad shows and its message
+            - "company": the brand or company featured in this ad
+            - "proposedTitle": a compelling, concise ad title
+            - "recommendedContexts": array of 3-5 literal visual and audio scene tags that you can actually see or hear (e.g., "Beach", "Sunny Sky", "Cocktails", "Friends Laughing"). Do not use abstract concepts.
+            - "negativeCampaignContexts": array of 2-3 negative campaign contexts or settings to avoid for this specific ad (e.g. "Indoor Settings", "Negative Reviews", "Gloomy Weather").
+            - "brandSafetyGARM": array of 1-3 strictly defined GARM (Global Alliance for Responsible Media) brand safety exclusions present or bordering in this video. Only use terms like: "Violence", "Underage", "Hate Speech", "Tragedy", "Crime", "Drugs", "Adult Content". If absolutely clean, return [].
+            - "targetDemographics": array of 2-4 strings describing the target age, gender, and household income (e.g., "Male", "30s", "HHI $100K+").
+            - "negativeDemographics": array of 1-3 strings describing demographics who should NOT see this ad (e.g., "Teenagers", "Underage").
+            - "targetAudience": Object with 3 string arrays: "highPriority" (2-3 items), "mediumPriority" (1-2 items), and "lowPriority" (1-2 items). These are target audience affinities (e.g., Luxury, Spirits, Gen-Z).
+            - "timelineMarkers": array of 3-6 objects with { "timestampSec": number, "label": short label, "reasoning": why this moment is relevant for ad targeting }
+            - "iab": array of 2-6 objects. Each object MUST be one of the allowed rows below (identical "tier1", "tier2", optional "tier3", and "code" strings). Include "confidence": number from 0 to 1 per row. Never use IAB codes or tier labels that are not in the allowed list.
+            - "iabTopTier1": array of top 1-3 tier1 labels copied from your chosen iab rows (must match those rows exactly)
+            - "iabTopTier2": array of top 2-5 tier2 labels copied from your chosen iab rows (must match those rows exactly)
+            - "iabTopTier3": array of top 0-5 tier3 labels copied from your chosen iab rows when available (must match those rows exactly)
 
-${iabBlock}
+            ${iabBlock}
 
-Return ONLY valid JSON, no markdown fences.`;
+            Return ONLY valid JSON, no markdown fences.`;
 
             const res = await fetch("/api/analyze", {
                 method: "POST",
