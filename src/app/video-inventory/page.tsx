@@ -64,7 +64,8 @@ export default function VideoInventoryPage() {
         "69ba190b3571b38304a680b0",
         "69ba19712fc4a03916fd0d7b",
         "69ba19ddbd3198ff9f5ae83b",
-        "6a035a24aa1ea09f190cc121"
+        "6a035a24aa1ea09f190cc121",
+        '6a07434e77e1b76830913d87'
     ]
 
     // Split ready vs. still-indexing videos
