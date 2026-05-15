@@ -1,6 +1,7 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { listAllBlobs } from "../../lib/blobList";
+import { VIDEO_LIST_BLOB_READ_PREFIXES } from "../../lib/videoListBlobPrefix";
 import { getIndexId, getTwelveLabsClient } from "../../lib/twelvelabs";
 
 export const dynamic = "force-dynamic";
@@ -74,7 +75,15 @@ export async function GET(request) {
   let clipEmbeddings = null; // [{ startOffsetSec, endOffsetSec, vector }]
 
   try {
-    const videoBlobs = await listAllBlobs("api_video_cache_v3_");
+    const videoBlobs = [];
+    for (const p of VIDEO_LIST_BLOB_READ_PREFIXES) {
+      videoBlobs.push(...(await listAllBlobs(p)));
+    }
+    videoBlobs.sort((a, b) => {
+      const rank = (pathname) =>
+        String(pathname || "").includes("api_video_cache_v4_") ? 1 : 0;
+      return rank(b.pathname) - rank(a.pathname);
+    });
 
     for (const blob of videoBlobs) {
       try {

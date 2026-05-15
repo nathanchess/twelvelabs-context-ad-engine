@@ -37,7 +37,7 @@ interface UseVideosOptions {
 }
 
 /* ── Config ─────────────────────────────────────────────── */
-const CACHE_KEY_PREFIX = "tl_video_cache_v2_";
+const CACHE_KEY_PREFIX = "tl_video_cache_v3_";
 const STALE_MS = 7 * 24 * 60 * 60 * 1000;  // 7 days — refetch in background after this
 
 /* ── Low-level localStorage helpers ─────────────────────── */

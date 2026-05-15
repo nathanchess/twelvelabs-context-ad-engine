@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listAllBlobs } from "../../lib/blobList";
+import { VIDEO_LIST_BLOB_READ_PREFIXES, pickFresherCachedVideo } from "../../lib/videoListBlobPrefix";
 
 export const dynamic = "force-dynamic";
 
@@ -102,8 +103,10 @@ function parseAnalysis(raw) {
 export async function GET() {
   try {
     // 1. Fetch cached video list for the ads index
-    const videoCachePrefix = "api_video_cache_v3_";
-    const videoBlobs = await listAllBlobs(videoCachePrefix);
+    const videoBlobs = [];
+    for (const p of VIDEO_LIST_BLOB_READ_PREFIXES) {
+      videoBlobs.push(...(await listAllBlobs(p)));
+    }
 
     let allVideos = [];
     for (const blob of videoBlobs) {
@@ -116,6 +119,16 @@ export async function GET() {
       } catch { /* skip */ }
     }
 
+    const deduped = [];
+    const byId = new Map();
+    for (const v of allVideos) {
+      if (!v?.id) continue;
+      const prev = byId.get(v.id);
+      byId.set(v.id, pickFresherCachedVideo(prev, v));
+    }
+    for (const v of byId.values()) deduped.push(v);
+    allVideos = deduped;
+
     // Filter to only ad-index videos (those with userMetadata containing a slug)
     const adVideos = allVideos.filter((v) => {
       try {
@@ -126,7 +139,7 @@ export async function GET() {
       }
     });
 
-    // 2. Newest analysis_v5 blob per videoId (same rule as /api/analyses, IAB export; video list still api_video_cache_v3_)
+    // 2. Newest analysis_v5 blob per videoId (same rule as /api/analyses, IAB export; video list blobs: videoListBlobPrefix.js)
     const analysisBlobs = await listAllBlobs("analysis_v5_");
     const analysesByVideoId = new Map();
     for (const blob of analysisBlobs) {

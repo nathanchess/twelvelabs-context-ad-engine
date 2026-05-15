@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listAllBlobs } from "../../lib/blobList";
+import { VIDEO_LIST_BLOB_READ_PREFIXES, pickFresherCachedVideo } from "../../lib/videoListBlobPrefix";
 import {
   finalizeSemanticTaxonomyIab,
   isSemanticDirectTaxonomyPayload,
@@ -50,7 +51,10 @@ export async function GET(request) {
   }
 
   try {
-    const videoBlobs = await listAllBlobs("api_video_cache_v3_");
+    const videoBlobs = [];
+    for (const p of VIDEO_LIST_BLOB_READ_PREFIXES) {
+      videoBlobs.push(...(await listAllBlobs(p)));
+    }
     const byVideoId = new Map();
     for (const blob of videoBlobs) {
       try {
@@ -60,7 +64,8 @@ export async function GET(request) {
         if (!Array.isArray(arr)) continue;
         for (const video of arr) {
           if (!video?.id) continue;
-          if (!byVideoId.has(video.id)) byVideoId.set(video.id, video);
+          const prev = byVideoId.get(video.id);
+          byVideoId.set(video.id, pickFresherCachedVideo(prev, video));
         }
       } catch {
         // ignore malformed blob payloads

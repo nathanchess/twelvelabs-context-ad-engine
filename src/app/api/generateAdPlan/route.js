@@ -1,228 +1,373 @@
-import { TwelveLabs } from "twelvelabs-js";
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { listAllBlobs } from "../../lib/blobList";
+import { getIndexId, getTwelveLabsClient } from "../../lib/twelvelabs";
+import { resolveAsyncAnalyzeVideo } from "../../lib/adInventorySemanticResolve";
 
 export const maxDuration = 600;
 
-const CHUNK_DURATION = 600; // 5 minutes per chunk
 const CACHE_VERSION = "v1";
+const INVENTORY_INDEX_NAME = "tl-context-engine-videos";
 
-/* ═══════════════════════════════════════════════════════════
-   STEP A — Cast-Only Prompt & Schema
-   A single, lightweight call to identify every person in
-   the video before we start segmenting.
-   ═══════════════════════════════════════════════════════════ */
-
-const cast_prompt = `
-    You are a broadcast ad-ops analyst for a premium CTV platform.
-
-    Watch this entire video and identify every on-screen person.
-
-    For each person provide:
-    - "name": Their real name if it can be determined from dialogue, chyrons, credits, or well-known public identity. Otherwise use a descriptive label (e.g. "Woman in red dress").
-    - "description": A brief physical or contextual descriptor so they can be tracked across scenes (e.g. "Tall brunette woman with hoop earrings, central to most confrontations").
-
-    Only include the main cast, no need to include background characters, narrators, or hosts.
-
-    Return ONLY the JSON. No markdown fences.
-`;
-
-const cast_response_format = {
-    type: "object",
-    properties: {
-        cast: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    name: { type: "string" },
-                    description: { type: "string" }
-                },
-                required: ["name", "description"]
-            }
-        }
+/** Pegasus 1.5 segment_definitions — mirrors prompt_pegasus_test.js (flat fields → normalized to legacy nested shape in code). */
+const PEGASUS_SEGMENT_DEFINITIONS = [
+    {
+        id: "scene",
+        description:
+            "A narratively or thematically cohesive segment suitable for CTV ad break planning. Group consecutive shots into the broadest meaningful unit rather than splitting on every visual change. Intros, recaps, title sequences, and cold opens each constitute a single segment regardless of internal cuts.",
+        fields: [
+            {
+                name: "scene_context",
+                type: "string",
+                description: "One concise sentence describing the scene, referencing cast by name",
+            },
+            {
+                name: "environment",
+                type: "string",
+                description: "Environment of the scene",
+            },
+            {
+                name: "cast_present",
+                type: "array",
+                description: "Names of cast members visible or speaking",
+                items: { type: "string" },
+            },
+            {
+                name: "activities",
+                type: "array",
+                description: "Key activities in the scene. Title case.",
+                items: { type: "string" },
+            },
+            {
+                name: "objects_of_interest",
+                type: "array",
+                description: "Notable objects in the scene. Title case.",
+                items: { type: "string" },
+            },
+            {
+                name: "sentiment",
+                type: "string",
+                description: "Sentiment of the scene",
+                enum: ["Positive", "Neutral", "Negative", "Mixed"],
+            },
+            {
+                name: "emotional_intensity",
+                type: "number",
+                description: "Emotional intensity of the scene",
+                minimum: 0,
+                maximum: 1,
+            },
+            {
+                name: "tone",
+                type: "string",
+                description: "Tone of the scene",
+                enum: [
+                    "Celebratory",
+                    "Romantic",
+                    "Tense",
+                    "Comedic",
+                    "Somber",
+                    "Inspirational",
+                    "Casual",
+                    "Dramatic",
+                    "Action",
+                    "Informational",
+                ],
+            },
+            {
+                name: "brand_safety_is_safe",
+                type: "boolean",
+                description: "Whether the scene is safe for advertising.",
+            },
+            {
+                name: "brand_safety_risk_level",
+                type: "string",
+                description: "Overall brand-safety risk level for the scene.",
+                enum: ["Low", "Medium", "High"],
+            },
+            {
+                name: "brand_safety_garm_flags",
+                type: "array",
+                description:
+                    "GARM issues for this scene. Each entry is one pipe-delimited string: CATEGORY|SEVERITY|EVIDENCE where SEVERITY is one of Floor Violation, High Risk, Medium Risk, Low Risk. Use an empty array if none.",
+                items: { type: "string", description: "One flag as CATEGORY|SEVERITY|EVIDENCE" },
+            },
+            {
+                name: "ad_suitable_categories",
+                type: "array",
+                description: "Product or vertical categories that would suit ads in this scene.",
+                items: { type: "string", description: "A suitable category label" },
+            },
+            {
+                name: "ad_unsuitable_categories",
+                type: "array",
+                description: "Categories that would be a poor or unsafe fit for ads in this scene.",
+                items: { type: "string", description: "An unsuitable category label" },
+            },
+            {
+                name: "ad_contextual_themes",
+                type: "array",
+                description: "Short contextual theme labels for ad targeting (e.g. sports, family, finance).",
+                items: { type: "string", description: "A theme label" },
+            },
+            {
+                name: "ad_suitability_confidence",
+                type: "number",
+                description: "Model confidence (0–1) for the suitability judgments above.",
+                minimum: 0,
+                maximum: 1,
+            },
+            {
+                name: "ad_break_post_segment_break_quality",
+                type: "string",
+                description: "Quality of a hypothetical ad break immediately after this segment.",
+                enum: ["High", "Medium", "Low"],
+            },
+            {
+                name: "ad_break_break_type",
+                type: "string",
+                description: "How the scene transitions at the end (relevant to placing an ad break).",
+                enum: ["Hard Cut", "Fade", "Narrative Pause", "Topic Shift", "None"],
+            },
+            {
+                name: "ad_break_interruption_risk",
+                type: "number",
+                description: "How jarring an ad would feel at segment end (0 = seamless, 1 = very disruptive).",
+                minimum: 0,
+                maximum: 1,
+            },
+            {
+                name: "ad_break_reasoning",
+                type: "string",
+                description: "Brief reasoning for ad break fitness scores, referencing concrete scene content.",
+            },
+        ],
     },
-    required: ["cast"]
-};
+];
 
-/* ═══════════════════════════════════════════════════════════
-   STEP B — Segment Chunk Prompt Builder & Schema
-   Called once per 10-minute window. The cast list from Step A
-   is injected so the model knows who is who.
-   ═══════════════════════════════════════════════════════════ */
+const LEGACY_ENVIRONMENTS = [
+    "Indoor Home",
+    "Indoor Office",
+    "Indoor Bar Restaurant",
+    "Indoor Retail",
+    "Indoor Venue",
+    "Outdoor Urban",
+    "Outdoor Nature",
+    "Outdoor Adventure",
+    "Outdoor Sports Venue",
+    "Vehicle",
+    "Studio",
+    "Other",
+];
 
-function buildChunkPrompt(castList, startSec, endSec, isFirstChunk) {
-    const castBlock = castList.map(c => `  - ${c.name}: ${c.description}`).join("\n");
+const GARM_SEVERITIES = ["Floor Violation", "High Risk", "Medium Risk", "Low Risk"];
 
-    return `
-    You are a broadcast ad-ops analyst for a premium CTV platform.
-
-    KNOWN CAST (identified from a prior full-video pass):
-    ${castBlock}
-
-    YOUR TASK: Analyze ONLY the portion of this video from second ${startSec} to second ${endSec}.
-
-    Your analysis MUST start exactly at second ${startSec} — this is a continuation from a prior chunk that ended at this timestamp.
-
-    Segment this window into major scenes (typically 2-6 per 10-minute window). 
-
-    CRITICAL SEGMENTATION RULES:
-    - DO NOT summarize this entire window into a single massive segment.
-    - Must return at least one segment / scene.
-    - DO NOT create a new segment for every minor camera cut, reaction shot, or brief pause in dialogue.
-    - Group rapid micro-interactions into larger, cohesive thematic scenes.
-    - HARD LIMIT: You MUST return a MAXIMUM of 6 segments for this chunk. If there is constant cutting, you MUST merge them into a single, broader narrative block.
-    - You must create a new segment boundary ONLY when there is a major change in physical location, or a complete, sustained shift in the broader conversation topic.
-    
-
-    For EACH segment provide ALL of the following:
-
-    1. TIMESTAMPS: Accurate start_time and end_time in seconds within this window.
-      - The FIRST segment's start_time must be ${startSec}
-      - The LAST segment's end_time should be the point where the last scene naturally ends (at or before ${endSec}).
-      - There must be NO GAPS between segments: each segment's end_time equals the next segment's start_time.
-
-    2. SCENE CONTEXT: One concise sentence (max 25 words) describing the scene. Reference cast members by name.
-
-    3. ENVIRONMENT: Strictly one of: "Indoor Home", "Indoor Office", "Indoor Bar Restaurant", "Indoor Retail", "Indoor Venue", "Outdoor Urban", "Outdoor Nature", "Outdoor Adventure", "Outdoor Sports Venue", "Vehicle", "Studio", "Other".
-
-    4. CAST PRESENT: Names of cast members visible or speaking.
-
-    5. DETAILS: List key "activities" and notable "objects_of_interest".
-
-    6. EMOTIONAL CONTEXT:
-      - "sentiment": Positive, Neutral, Negative, or Mixed.
-      - "emotional_intensity": 0.0 to 1.0.
-      - "tone": Strictly one of: Celebratory, Romantic, Tense, Comedic, Somber, Inspirational, Casual, Dramatic, Action, Informational.
-
-    7. BRAND SAFETY (GARM): Assess "is_safe", "risk_level" (Low/Medium/High), and populate "garm_flags" only if risks are clearly present.
-
-    8. AD SUITABILITY: List "suitable_categories" and "unsuitable_categories" using ONLY: Luxury goods, Premium spirits, Travel, Fine Dining, Automotive, Home improvement, Fitness, Health & Wellness, Gaming, Fast Food, Music, Entertainment, Pop Culture. Also list "contextual_themes" and a "confidence" score (0.0-1.0).
-
-    9. AD BREAK FITNESS: At the END of each segment assess:
-      - "post_segment_break_quality": High, Medium, or Low.
-      - "break_type": Hard Cut, Fade, Narrative Pause, Topic Shift, or None.
-      - "interruption_risk": 0.0 to 1.0.
-      - "reasoning": 1-2 sentences referencing the SPECIFIC events, dialogue, story beats, or cast actions at this timestamp that justify the rating.
-
-    Brevity is critical for all text fields EXCEPT reasoning, which must reference actual content.
-
-`;
+function clampUnitInterval(value) {
+    const n = typeof value === "number" && !Number.isNaN(value) ? value : Number(value);
+    if (!Number.isFinite(n)) return 0;
+    let x = n;
+    if (x > 1) x = x / 10;
+    if (x > 1) x = 1;
+    if (x < 0) x = 0;
+    return x;
 }
 
-const segment_chunk_response_format = {
-    type: "object",
-    properties: {
-        segments: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    start_time: { type: "number", description: "Segment start in seconds" },
-                    end_time: { type: "number", description: "Segment end in seconds" },
-                    scene_context: { type: "string", description: "One concise sentence describing the scene, referencing cast by name" },
-                    environment: {
-                        type: "string",
-                        enum: [
-                            "Indoor Home", "Indoor Office", "Indoor Bar Restaurant",
-                            "Indoor Retail", "Indoor Venue", "Outdoor Urban",
-                            "Outdoor Nature", "Outdoor Adventure", "Outdoor Sports Venue",
-                            "Vehicle", "Studio", "Other"
-                        ]
-                    },
-                    cast_present: { type: "array", items: { type: "string" } },
-                    activities: { type: "array", items: { type: "string" } },
-                    objects_of_interest: { type: "array", items: { type: "string" } },
-                    sentiment: { type: "string", enum: ["Positive", "Neutral", "Negative", "Mixed"] },
-                    emotional_intensity: { type: "number" },
-                    tone: {
-                        type: "string",
-                        enum: ["Celebratory", "Romantic", "Tense", "Comedic", "Somber", "Inspirational", "Casual", "Dramatic", "Action", "Informational"]
-                    },
-                    brand_safety: {
-                        type: "object",
-                        properties: {
-                            is_safe: { type: "boolean" },
-                            risk_level: { type: "string", enum: ["Low", "Medium", "High"] },
-                            garm_flags: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        category: { type: "string" },
-                                        severity: { type: "string", enum: ["Floor Violation", "High Risk", "Medium Risk", "Low Risk"] },
-                                        evidence: { type: "string" }
-                                    },
-                                    required: ["category", "severity", "evidence"]
-                                }
-                            }
-                        },
-                        required: ["is_safe", "risk_level", "garm_flags"]
-                    },
-                    ad_suitability: {
-                        type: "object",
-                        properties: {
-                            suitable_categories: { type: "array", items: { type: "string" } },
-                            unsuitable_categories: { type: "array", items: { type: "string" } },
-                            contextual_themes: { type: "array", items: { type: "string" } },
-                            confidence: { type: "number" }
-                        },
-                        required: ["suitable_categories", "unsuitable_categories", "contextual_themes", "confidence"]
-                    },
-                    ad_break_fitness: {
-                        type: "object",
-                        properties: {
-                            post_segment_break_quality: { type: "string", enum: ["High", "Medium", "Low"] },
-                            break_type: { type: "string", enum: ["Hard Cut", "Fade", "Narrative Pause", "Topic Shift", "None"] },
-                            interruption_risk: { type: "number" },
-                            reasoning: { type: "string" }
-                        },
-                        required: ["post_segment_break_quality", "break_type", "interruption_risk", "reasoning"]
-                    }
-                },
-                required: [
-                    "start_time", "end_time", "scene_context", "environment",
-                    "cast_present", "activities", "sentiment", "emotional_intensity", "tone",
-                    "brand_safety", "ad_suitability", "ad_break_fitness"
-                ]
-            }
-        }
-    },
-    required: ["segments"]
-};
+function snapEnvironment(raw) {
+    const s = typeof raw === "string" ? raw.trim() : "";
+    if (!s) return "Other";
+    const exact = LEGACY_ENVIRONMENTS.find((e) => e.toLowerCase() === s.toLowerCase());
+    if (exact) return exact;
+    const lower = s.toLowerCase();
+    if (lower.includes("studio")) return "Studio";
+    if (lower.includes("vehicle") || lower.includes("car")) return "Vehicle";
+    if (lower.includes("arena") || lower.includes("stadium") || lower.includes("sports")) return "Outdoor Sports Venue";
+    if (lower.includes("beach") || lower.includes("ocean") || lower.includes("jungle") || lower.includes("island") || lower.includes("camp"))
+        return "Outdoor Nature";
+    if (lower.includes("challenge") || lower.includes("outdoor")) return "Outdoor Adventure";
+    if (lower.includes("urban") || lower.includes("city")) return "Outdoor Urban";
+    if (lower.includes("office")) return "Indoor Office";
+    if (lower.includes("restaurant") || lower.includes("bar")) return "Indoor Bar Restaurant";
+    if (lower.includes("retail") || lower.includes("shop")) return "Indoor Retail";
+    if (lower.includes("venue") || lower.includes("tribal") || lower.includes("council")) return "Indoor Venue";
+    if (lower.includes("home")) return "Indoor Home";
+    return "Other";
+}
 
-/* ═══════════════════════════════════════════════════════════
-   Shared Utilities
-   ═══════════════════════════════════════════════════════════ */
+function normalizeGarmSeverity(s) {
+    const t = typeof s === "string" ? s.trim() : "";
+    if (GARM_SEVERITIES.includes(t)) return t;
+    const lower = t.toLowerCase();
+    if (lower.includes("floor")) return "Floor Violation";
+    if (lower.includes("high")) return "High Risk";
+    if (lower.includes("medium")) return "Medium Risk";
+    if (lower.includes("low")) return "Low Risk";
+    return "Low Risk";
+}
 
+function parseGarmPipeStrings(items) {
+    if (!Array.isArray(items)) return [];
+    const out = [];
+    for (const row of items) {
+        if (typeof row !== "string" || !row.trim()) continue;
+        const parts = row.split("|").map((p) => p.trim());
+        if (parts.length < 3) continue;
+        const category = parts[0] || "Unknown";
+        const severity = normalizeGarmSeverity(parts[1]);
+        const evidence = parts.slice(2).join("| ").trim() || "";
+        out.push({ category, severity, evidence });
+    }
+    return out;
+}
 
+function pegasusRowToLegacySegment(row) {
+    const md = row && typeof row === "object" && row.metadata && typeof row.metadata === "object" ? row.metadata : {};
+    const start = row?.start_time ?? row?.startTime;
+    const end = row?.end_time ?? row?.endTime;
 
-function parseAnalyzeResult(raw) {
-    if (!raw) return null;
-    let inner = raw.data ?? raw;
-    if (typeof inner === "string") {
-        try {
-            inner = JSON.parse(inner);
-        } catch {
-            const match = inner.match(/\{[\s\S]*\}/);
-            if (match) {
-                try { inner = JSON.parse(match[0]); } catch { return null; }
-            } else {
-                return null;
-            }
+    const brand_safety = {
+        is_safe: Boolean(md.brand_safety_is_safe),
+        risk_level: ["Low", "Medium", "High"].includes(md.brand_safety_risk_level) ? md.brand_safety_risk_level : "Low",
+        garm_flags: parseGarmPipeStrings(md.brand_safety_garm_flags),
+    };
+
+    const ad_suitability = {
+        suitable_categories: Array.isArray(md.ad_suitable_categories) ? md.ad_suitable_categories : [],
+        unsuitable_categories: Array.isArray(md.ad_unsuitable_categories) ? md.ad_unsuitable_categories : [],
+        contextual_themes: Array.isArray(md.ad_contextual_themes) ? md.ad_contextual_themes : [],
+        confidence: clampUnitInterval(md.ad_suitability_confidence),
+    };
+
+    const ad_break_fitness = {
+        post_segment_break_quality: ["High", "Medium", "Low"].includes(md.ad_break_post_segment_break_quality)
+            ? md.ad_break_post_segment_break_quality
+            : "Medium",
+        break_type: ["Hard Cut", "Fade", "Narrative Pause", "Topic Shift", "None"].includes(md.ad_break_break_type)
+            ? md.ad_break_break_type
+            : "None",
+        interruption_risk: clampUnitInterval(md.ad_break_interruption_risk),
+        reasoning: typeof md.ad_break_reasoning === "string" ? md.ad_break_reasoning : "",
+    };
+
+    const toneSet = new Set([
+        "Celebratory",
+        "Romantic",
+        "Tense",
+        "Comedic",
+        "Somber",
+        "Inspirational",
+        "Casual",
+        "Dramatic",
+        "Action",
+        "Informational",
+    ]);
+    const sentimentSet = new Set(["Positive", "Neutral", "Negative", "Mixed"]);
+
+    return {
+        start_time: typeof start === "number" ? start : Number(start) || 0,
+        end_time: typeof end === "number" ? end : Number(end) || 0,
+        scene_context: typeof md.scene_context === "string" ? md.scene_context : "",
+        environment: snapEnvironment(md.environment),
+        cast_present: Array.isArray(md.cast_present) ? md.cast_present : [],
+        activities: Array.isArray(md.activities) ? md.activities : [],
+        objects_of_interest: Array.isArray(md.objects_of_interest) ? md.objects_of_interest : [],
+        sentiment: sentimentSet.has(md.sentiment) ? md.sentiment : "Neutral",
+        emotional_intensity: clampUnitInterval(md.emotional_intensity),
+        tone: toneSet.has(md.tone) ? md.tone : "Informational",
+        brand_safety,
+        ad_suitability,
+        ad_break_fitness,
+    };
+}
+
+function deriveCastFromSegments(segments) {
+    const names = new Set();
+    for (const seg of segments) {
+        const cp = seg?.cast_present;
+        if (!Array.isArray(cp)) continue;
+        for (const n of cp) {
+            if (typeof n === "string" && n.trim()) names.add(n.trim());
         }
     }
-    return inner;
+    return [...names].map((name) => ({
+        name,
+        description: "Identified from Pegasus scene timeline.",
+    }));
 }
 
-/* ═══════════════════════════════════════════════════════════
-   POST Handler — Two-Pass Chunked Analysis
-   ═══════════════════════════════════════════════════════════ */
+function parsePegasusTaskData(rawData) {
+    if (rawData == null) return [];
+    let obj = rawData;
+    if (typeof obj === "string") {
+        try {
+            obj = JSON.parse(obj);
+        } catch {
+            return [];
+        }
+    }
+    const scene = obj?.scene ?? obj?.scenes;
+    return Array.isArray(scene) ? scene : [];
+}
+
+function unwrapMaybeData(res) {
+    if (res && typeof res === "object" && res.data != null) {
+        return res.data;
+    }
+    return res;
+}
+
+/**
+ * New / cache-miss path: Pegasus 1.5 async time_based_metadata (same contract as prompt_pegasus_test.js).
+ * Video must be `{ type: "asset_id", assetId }` for indexed TwelveLabs assets (HLS .m3u8 URLs are not valid `url` input).
+ */
+async function runPegasusInventoryAdPlan(tlClient, video) {
+    const createRes = await tlClient.analyzeAsync.tasks.create(
+        {
+            modelName: "pegasus1.5",
+            video,
+            analysisMode: "time_based_metadata",
+            responseFormat: {
+                type: "segment_definitions",
+                segmentDefinitions: PEGASUS_SEGMENT_DEFINITIONS,
+            },
+            maxTokens: 65536,
+        },
+        { timeoutInSeconds: 120 },
+    );
+
+    const created = unwrapMaybeData(createRes);
+    const taskId = created?.taskId;
+    if (!taskId) {
+        throw new Error("TwelveLabs analyzeAsync did not return a task id");
+    }
+
+    const pollStart = Date.now();
+    const maxWaitMs = Math.max(120000, (Number(process.env.GENERATE_AD_PLAN_PEGASUS_MAX_MS) || 540000));
+
+    while (Date.now() - pollStart < maxWaitMs) {
+        const pollRes = await tlClient.analyzeAsync.tasks.retrieve(taskId, { timeoutInSeconds: 90 });
+        const task = unwrapMaybeData(pollRes);
+        const status = task?.status;
+
+        if (status === "ready") {
+            const rawData = task?.result?.data;
+            const rows = parsePegasusTaskData(rawData);
+            const segments = rows.map(pegasusRowToLegacySegment).sort((a, b) => a.start_time - b.start_time);
+            const cast = deriveCastFromSegments(segments);
+            return { cast, segments };
+        }
+        if (status === "failed") {
+            const msg = task?.error?.message || `Pegasus task ${taskId} failed`;
+            throw new Error(msg);
+        }
+        await new Promise((r) => setTimeout(r, 5000));
+    }
+
+    throw new Error("Pegasus analysis timed out while waiting for task completion");
+}
 
 export async function POST(request) {
-    const tl_client = new TwelveLabs({ apiKey: process.env.TL_API_KEY });
-    const { videoId, videoDuration: clientDuration } = await request.json();
+    const tl_client = getTwelveLabsClient();
+    const { videoId } = await request.json();
 
     if (!videoId) {
         return NextResponse.json({ error: "Video ID is required" }, { status: 400 });
@@ -231,7 +376,7 @@ export async function POST(request) {
     const blobName = `ad_plan_timeline_${CACHE_VERSION}_${videoId}.json`;
 
     try {
-        /* ── Check cache ─────────────────────────────────── */
+        /* ── Cache hit: unchanged legacy JSON (old videos) ─────────────────── */
         const blobs = await listAllBlobs(blobName);
         if (blobs.length > 0) {
             console.log(`[generateAdPlan] Cache HIT for ${videoId}`);
@@ -248,117 +393,50 @@ export async function POST(request) {
             }
         }
 
-        if (!clientDuration) {
-            return NextResponse.json({ error: "Video duration is required" }, { status: 400 });
-        }
+        /* ── Cache miss: Pegasus 1.5 (new videos) ───────────────────────────── */
+        console.log(`[generateAdPlan] Cache MISS for ${videoId} — running Pegasus 1.5 analyzeAsync`);
 
-        const totalDuration = clientDuration
+        const indexId = await getIndexId(INVENTORY_INDEX_NAME);
+        const videoData = await tl_client.indexes.videos.retrieve(indexId, videoId);
+        const hlsData = videoData?.hls || {};
+        const videoUrl = hlsData.videoUrl || hlsData.video_url || null;
+        const apiAssetId =
+            typeof videoData?.assetId === "string" && /^[a-f0-9]{24}$/i.test(videoData.assetId.trim())
+                ? videoData.assetId.trim()
+                : typeof videoData?.asset_id === "string" && /^[a-f0-9]{24}$/i.test(videoData.asset_id.trim())
+                  ? videoData.asset_id.trim()
+                  : null;
 
-        console.log(`[generateAdPlan] Starting two-pass analysis for ${videoId} (duration=${totalDuration}s)`);
-
-        /* ══════════════════════════════════════════════════
-           STEP A — Cast Analysis (single call)
-           ══════════════════════════════════════════════════ */
-        console.log(`[generateAdPlan] Step A: Cast analysis...`);
-        const castResult = await tl_client.analyze({
+        const resolved = resolveAsyncAnalyzeVideo({
+            assetId: apiAssetId || undefined,
+            videoUrl: typeof videoUrl === "string" ? videoUrl : "",
             videoId,
-            prompt: cast_prompt,
-            temperature: 0.1,
-            max_tokens: 2048,
-            responseFormat: {
-                type: "json_schema",
-                jsonSchema: cast_response_format,
-            },
-        }, { timeoutInSeconds: 120 });
+        });
 
-        const castParsed = parseAnalyzeResult(castResult);
-        const castList = castParsed?.cast || [];
-        console.log(`[generateAdPlan] Step A complete: ${castList.length} cast members identified`);
-        if (castList.length > 0) {
-            console.log(`[generateAdPlan]   Cast: ${castList.map(c => c.name).join(", ")}`);
+        if (!resolved?.video) {
+            return NextResponse.json(
+                {
+                    error:
+                        "Could not resolve a TwelveLabs asset id for Pegasus. Use a 24-char hex video id, or wait until the playback URL includes /assets/{id}/.",
+                },
+                { status: 400 },
+            );
         }
 
-        /* ══════════════════════════════════════════════════
-           STEP B — Chunked Segment Analysis
-           ══════════════════════════════════════════════════ */
-        const chunkResults = {};
-        let allSegments = [];
-        let currentStart = 0;
-        let chunkIndex = 0;
-        let consecutiveEmptyChunks = 0;
-        const MAX_EMPTY_CHUNKS = 2;
+        console.log(`[generateAdPlan] Pegasus video input: ${resolved.source} (${resolved.video.type})`);
 
-        while (currentStart < totalDuration) {
-            const chunkEnd = Math.min(currentStart + CHUNK_DURATION, totalDuration);
-            const isFirstChunk = chunkIndex === 0;
+        const { cast, segments } = await runPegasusInventoryAdPlan(tl_client, resolved.video);
 
-            console.log(`[generateAdPlan] Step B chunk ${chunkIndex}: ${currentStart}s – ${chunkEnd}s`);
+        console.log(
+            `[generateAdPlan] Pegasus complete for ${videoId}: ${cast.length} cast (derived), ${segments.length} segments`,
+        );
 
-            const chunkPrompt = buildChunkPrompt(castList, currentStart, chunkEnd, isFirstChunk);
-
-            try {
-                const chunkResult = await tl_client.analyze({
-                    videoId,
-                    prompt: chunkPrompt,
-                    temperature: 0.1,
-                    max_tokens: 4096,
-                    responseFormat: {
-                        type: "json_schema",
-                        jsonSchema: segment_chunk_response_format,
-                    },
-                }, { timeoutInSeconds: 180 });
-
-                if (chunkResult.finishReason !== "stop") {
-                    console.error(`[generateAdPlan]   Chunk ${chunkIndex} FAILED:`, chunkResult.finishReason);
-                    break;
-                }
-
-                const parsed = parseAnalyzeResult(chunkResult);
-                const chunkSegments = parsed?.segments || [];
-
-                chunkResults[`chunk_${chunkIndex}`] = {
-                    requestedWindow: { start: currentStart, end: chunkEnd },
-                    segmentCount: chunkSegments.length,
-                    segments: chunkSegments,
-                };
-
-                allSegments.push(...chunkSegments);
-
-                if (chunkSegments.length === 0) {
-                    console.error(`[generateAdPlan]   Chunk ${chunkIndex}: 0 segments`);
-                    break;
-                }
-
-                const lastSegEnd = chunkSegments[chunkSegments.length - 1].end_time;
-                console.log(`[generateAdPlan]   Chunk ${chunkIndex}: ${chunkSegments.length} segments, last end_time=${lastSegEnd}s`);
-
-                // Deterministic continuity: next chunk starts exactly where this one left off
-                currentStart = lastSegEnd;
-
-            } catch (chunkErr) {
-                console.error(`[generateAdPlan]   Chunk ${chunkIndex} FAILED:`, chunkErr.message || chunkErr);
-                chunkResults[`chunk_${chunkIndex}`] = {
-                    requestedWindow: { start: currentStart, end: chunkEnd },
-                    error: chunkErr.message || "Unknown error",
-                };
-                // Advance past this window to avoid infinite loop on a failing chunk
-                currentStart = chunkEnd;
-            }
-
-            chunkIndex++;
-        }
-
-        console.log(`[generateAdPlan] Step B complete: ${allSegments.length} total segments across ${chunkIndex} chunks`);
-
-        if (allSegments.length === 0) {
+        if (segments.length === 0) {
             console.error(`[generateAdPlan] No segments produced for ${videoId}`);
             return NextResponse.json({ error: "Analysis produced no segments" }, { status: 500 });
         }
 
-        const finalPayload = {
-            cast: castList,
-            segments: allSegments,
-        };
+        const finalPayload = { cast, segments };
 
         try {
             await put(blobName, JSON.stringify(finalPayload), {
@@ -367,13 +445,12 @@ export async function POST(request) {
                 allowOverwrite: true,
                 contentType: "application/json",
             });
-            console.log(`[generateAdPlan] Cached final result: ${castList.length} cast, ${allSegments.length} segments → ${blobName}`);
+            console.log(`[generateAdPlan] Cached final result: ${cast.length} cast, ${segments.length} segments → ${blobName}`);
         } catch (blobErr) {
             console.error(`[generateAdPlan] Blob cache write failed:`, blobErr);
         }
 
         return NextResponse.json(finalPayload, { status: 200 });
-
     } catch (error) {
         console.error("[generateAdPlan] Fatal error:", error);
         return NextResponse.json(

@@ -15,6 +15,8 @@ export async function POST(request) {
                 return {
                     allowedContentTypes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm'],
                     maximumSizeInBytes: 10 * 1024 * 1024 * 1024, // 10GB limit
+                    // Same display filename can already exist in Blob (e.g. re-upload from video inventory).
+                    allowOverwrite: true,
                 };
             },
         });

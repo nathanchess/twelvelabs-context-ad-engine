@@ -2,8 +2,39 @@ import { NextResponse } from "next/server"
 import { getTwelveLabsClient, getIndexId } from "../../lib/twelvelabs"
 import { put, del } from '@vercel/blob';
 import { listAllBlobs } from '../../lib/blobList';
+import { VIDEO_LIST_BLOB_WRITE_PREFIX } from "../../lib/videoListBlobPrefix";
 
 const BLOB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+
+/** After Marengo indexing reports "ready", HLS packaging can lag with hls.status=PROCESSING and empty videoUrl. */
+const HLS_READY_POLL_MS = 5000;
+const HLS_READY_MAX_WAIT_MS = 5 * 60 * 1000;
+
+/**
+ * Poll indexes.videos.retrieve until playlist URL exists (or timeout).
+ * TwelveLabs often completes the indexing task while hls.videoUrl is still empty for several seconds.
+ */
+async function waitForHlsVideoUrl(tl_client, indexId, videoId) {
+    const deadline = Date.now() + HLS_READY_MAX_WAIT_MS;
+    let last = null;
+    while (Date.now() < deadline) {
+        last = await tl_client.indexes.videos.retrieve(indexId, videoId);
+        const hls = last?.hls || {};
+        const url = hls.videoUrl || hls.video_url;
+        if (url && String(url).trim()) {
+            return last;
+        }
+        const st = String(hls.status || hls.video_status || "").toUpperCase();
+        if (st === "FAILED" || st === "ERROR" || st === "FAILURE") {
+            throw new Error(`TwelveLabs HLS failed for video ${videoId} (hls.status=${hls.status || hls.video_status})`);
+        }
+        await new Promise((r) => setTimeout(r, HLS_READY_POLL_MS));
+    }
+    console.warn(
+        `[DEBUG] HLS videoUrl still empty after ${HLS_READY_MAX_WAIT_MS / 1000}s for ${videoId} — continuing with last retrieve (UI may show processing until next refresh).`,
+    );
+    return last;
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +50,7 @@ export async function GET(request) {
     const tl_client = getTwelveLabsClient()
     const indexId = await getIndexId(targetIndex)
 
-    const blobName = `api_video_cache_v3_${indexId}_${payloadMode}.json`;
+    const blobName = `${VIDEO_LIST_BLOB_WRITE_PREFIX}${indexId}_${payloadMode}.json`;
 
     if (!forceRefresh) {
         try {
@@ -79,19 +110,22 @@ export async function GET(request) {
         const sysMeta = videoData.systemMetadata || {};
         const rawUserMeta = videoData.userMetadata || videoData.user_metadata || null;
         const hlsStatus = hlsData.status || hlsData.video_status || null;
+        const playbackUrl = hlsData.videoUrl || hlsData.video_url || null;
 
-        // Statuses that mean TwelveLabs is still indexing — not yet playable.
-        // "COMPLETE" and "ready" both mean fully indexed.
+        // Statuses that mean TwelveLabs is still preparing playback — but hls.status can stay
+        // "PROCESSING" briefly *after* indexing finished while videoUrl is already set.
         const PROCESSING_STATUSES = new Set([
             'processing', 'PROCESSING',
             'pending', 'PENDING',
             'indexing', 'INDEXING',
             'queued', 'QUEUED',
         ]);
-        const isProcessing = hlsStatus && PROCESSING_STATUSES.has(hlsStatus);
+        const isProcessing = !!(hlsStatus && PROCESSING_STATUSES.has(hlsStatus) && !playbackUrl);
 
         if (isProcessing) {
-            console.log(`[DEBUG] Video ${videoData.id} is still processing (HLS status "${hlsStatus}") — including with processing flag.`);
+            console.log(
+                `[DEBUG] Video ${videoData.id} has no HLS URL yet (hls.status="${hlsStatus}") — marking as processing.`,
+            );
             // Include with limited data so the UI can show a "processing" state.
             videos.push({
                 id: videoData.id,
@@ -100,7 +134,7 @@ export async function GET(request) {
                 processing: true,
                 systemMetadata: {
                     filename: sysMeta.filename || null,
-                    duration: 0,
+                    duration: sysMeta.duration || 0,
                     fps: sysMeta.fps || 0,
                     width: sysMeta.width || 0,
                     height: sysMeta.height || 0,
@@ -145,7 +179,7 @@ export async function GET(request) {
                 size: sysMeta.size || 0,
             },
             hls: {
-                videoUrl: hlsData.videoUrl || hlsData.video_url || null,
+                videoUrl: playbackUrl,
                 thumbnailUrls: hlsData.thumbnailUrls || hlsData.thumbnail_urls || [],
                 status: hlsData.status || null,
             },
@@ -200,6 +234,8 @@ export async function POST(request) {
     const tl_client = getTwelveLabsClient()
     const indexId = await getIndexId(target_index || "tl-context-engine-ads")
     const uploadBlobPrefixes = [
+        `${VIDEO_LIST_BLOB_WRITE_PREFIX}${indexId}_full.json`,
+        `${VIDEO_LIST_BLOB_WRITE_PREFIX}${indexId}_meta.json`,
         `api_video_cache_v3_${indexId}_full.json`,
         `api_video_cache_v3_${indexId}_meta.json`,
         `api_video_cache_v2_${indexId}.json`, // legacy
@@ -274,21 +310,23 @@ export async function POST(request) {
 
                     console.log(`Task ${finalTask.id} completed with status ${finalTask.status} and video ID ${finalTask.videoId}`)
 
-                    const retrieveTask = await fetch(`https://api.twelvelabs.io/v1.3/indexes/${indexId}/videos/${finalTask.videoId}`, {
-                        method: "GET",
-                        headers: {
-                            "x-api-key": process.env.TL_API_KEY,
-                            "transcription": "true"
-                        }
+                    send('progress', {
+                        completed: i,
+                        total: totalVideos,
+                        percent: Math.round(((i + 0.5) / totalVideos) * 100),
+                        message: `Indexing complete — waiting for playable HLS stream for video ${i + 1} (TwelveLabs may still show HLS as PROCESSING)…`,
                     })
 
-                    const retrievedVideoData = await retrieveTask.json()
+                    // Indexing task is "ready" before CloudFront HLS URL is populated — wait so the next
+                    // GET /api/videos list is not stuck on processing: true for hours (blob cache TTL).
+                    const retrievedVideoData = await waitForHlsVideoUrl(tl_client, indexId, finalTask.videoId);
+                    const um = retrievedVideoData?.userMetadata ?? retrievedVideoData?.user_metadata;
 
                     const result = {
                         videoId: finalTask.videoId,
                         videoUrl: videoURL,
-                        userMetadata: retrievedVideoData.user_metadata,
-                        transcription: retrievedVideoData.transcription
+                        userMetadata: um,
+                        transcription: retrievedVideoData?.transcription,
                     }
 
                     videoData.push(result)
