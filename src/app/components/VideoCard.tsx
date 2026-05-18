@@ -11,6 +11,8 @@ interface VideoCardProps {
     /** Whether this is an Ad Inventory view or Video Inventory view. Determines link target. */
     viewType?: "ad-inventory" | "video-inventory";
     searchMatch?: { start: number; end: number; confidence: string; score?: number };
+    /** Hide the title row (e.g. when VideoInventoryCard renders its own title + menu). */
+    hideTitle?: boolean;
 }
 
 function formatDuration(secs: number): string {
@@ -19,7 +21,7 @@ function formatDuration(secs: number): string {
     return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inventory" }: VideoCardProps) {
+export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inventory", hideTitle = false }: VideoCardProps) {
     const filename = video.systemMetadata?.filename || "Untitled";
     const displayName = filename.replace(/\.[^.]+$/, "");
     const duration = video.systemMetadata?.duration || 0;
@@ -238,15 +240,17 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                 )}
             </Link>
 
-            <p
-                className={
-                    isVideoInventory
-                        ? "mt-2 text-[11px] text-text-primary font-medium truncate"
-                        : "mt-2 px-3 pb-3 text-[11px] text-text-primary font-medium truncate"
-                }
-            >
-                {displayName}
-            </p>
+            {!hideTitle && (
+                <p
+                    className={
+                        isVideoInventory
+                            ? "mt-2 text-[11px] text-text-primary font-medium truncate"
+                            : "mt-2 px-3 pb-3 text-[11px] text-text-primary font-medium truncate"
+                    }
+                >
+                    {displayName}
+                </p>
+            )}
         </div>
     );
 }

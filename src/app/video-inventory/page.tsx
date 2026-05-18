@@ -3,11 +3,10 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useVideos } from "../lib/videoCache";
 import VideoInventoryUploadModal from "../components/VideoInventoryUploadModal";
-import VideoCard from "../components/VideoCard";
+import VideoInventoryCard from "../components/VideoInventoryCard";
+import { useVideoInventoryPrefs } from "../lib/videoInventoryStore";
 import ScrollFadeUp from "../components/ScrollFadeUp";
 import ScrollProgressBar from "../components/ScrollProgressBar";
-import Link from "next/link";
-
 const genres = [
     "All Genres",
     "Technology",
@@ -56,7 +55,11 @@ export default function VideoInventoryPage() {
     const [isSearching, setIsSearching] = useState(false);
 
     // Fetch Videos for the generic inventory index
-    const { videos: allVideos, loading: videosLoading, refresh: refreshVideos } = useVideos("tl-context-engine-videos", { includeEmbeddings: false });
+    const { videos: allVideos, loading: videosLoading, refresh: refreshVideos } = useVideos("tl-context-engine-videos", {
+        includeEmbeddings: false,
+        refetchOnMount: true,
+    });
+    const { renameVideo, hideVideo, getDisplayName, isHidden } = useVideoInventoryPrefs();
 
     const hiddenVideoIDs = [
         "69ba18582fc4a03916fd0cd5",
@@ -65,11 +68,14 @@ export default function VideoInventoryPage() {
         "69ba19712fc4a03916fd0d7b",
         "69ba19ddbd3198ff9f5ae83b",
         "6a035a24aa1ea09f190cc121",
-        '6a07434e77e1b76830913d87'
+        '6a07434e77e1b76830913d87',
+        "6a073fe05a237763f2ba3bd9"
     ]
 
     // Split ready vs. still-indexing videos
-    const readyVideos = allVideos.filter((v) => !v.processing && !hiddenVideoIDs.includes(v.id));
+    const readyVideos = allVideos.filter(
+        (v) => !v.processing && !hiddenVideoIDs.includes(v.id) && !isHidden(v.id),
+    );
     const processingVideos = allVideos.filter((v) => v.processing);
 
     // Debounced semantic search via TwelveLabs /api/search
@@ -409,9 +415,16 @@ export default function VideoInventoryPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredVideos.map((video) => {
                             const match = searchResults?.find((r) => r.videoId === video.id || r.videoId === video.hls?.videoUrl);
+                            const displayName = getDisplayName(video.id, video.systemMetadata?.filename);
                             return (
-                                <div key={video.id}>
-                                    <VideoCard video={video} viewType="video-inventory" searchMatch={match} />
+                                <div key={video.id} className="relative overflow-visible">
+                                    <VideoInventoryCard
+                                        video={video}
+                                        displayName={displayName}
+                                        searchMatch={match}
+                                        onRename={(name) => renameVideo(video.id, name)}
+                                        onDelete={() => hideVideo(video.id)}
+                                    />
                                     {match && (
                                         <div className="mt-1.5 flex items-center gap-1.5 px-0.5">
                                             <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 text-mb-green-dark shrink-0">

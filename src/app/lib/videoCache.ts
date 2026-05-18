@@ -34,6 +34,8 @@ interface CacheEntry {
 
 interface UseVideosOptions {
     includeEmbeddings?: boolean;
+    /** When true, always re-fetch from TwelveLabs on mount (cached data shown first when available). */
+    refetchOnMount?: boolean;
 }
 
 /* ── Config ─────────────────────────────────────────────── */
@@ -138,6 +140,7 @@ export function invalidateVideoCache(index: string = "tl-context-engine-ads", in
  */
 export function useVideos(index: string = "tl-context-engine-ads", options: UseVideosOptions = {}) {
     const includeEmbeddings = options.includeEmbeddings ?? true;
+    const refetchOnMount = options.refetchOnMount ?? false;
     const [videos, setVideos] = useState<CachedVideo[]>([]);
     const [loading, setLoading] = useState(true);
     const fetchingRef = useRef(false);
@@ -176,15 +179,15 @@ export function useVideos(index: string = "tl-context-engine-ads", options: UseV
 
             const age = Date.now() - cached.timestamp;
             const stale = age > STALE_MS;
-            // Reload full payloads (including Marengo segments) when cache was slimmed or old
-            if (stale || cached.embeddingsOmitted) {
-                fetchFresh(false);
+            // Reload when cache is old/slimmed, or when caller wants a fresh index sync (e.g. shared inventory)
+            if (stale || cached.embeddingsOmitted || refetchOnMount) {
+                fetchFresh(false, refetchOnMount);
             }
         } else {
             // No cache — must fetch with loading spinner
-            fetchFresh(true);
+            fetchFresh(true, refetchOnMount);
         }
-    }, [index, includeEmbeddings, fetchFresh]);
+    }, [index, includeEmbeddings, refetchOnMount, fetchFresh]);
 
     /** Force a fresh fetch (e.g. after upload). Shows loading state and bypasses both localStorage and the Vercel Blob cache. */
     const refresh = useCallback(() => {
