@@ -9,7 +9,7 @@ export const maxDuration = 600;
 const CACHE_VERSION = "v1";
 const INVENTORY_INDEX_NAME = "tl-context-engine-videos";
 
-/** Pegasus 1.5 segment_definitions — mirrors prompt_pegasus_test.js (flat fields → normalized to legacy nested shape in code). */
+/** Pegasus 1.5 segment_definitions — same contract as prompt_pegasus_test.js */
 const PEGASUS_SEGMENT_DEFINITIONS = [
     {
         id: "scene",
@@ -145,147 +145,101 @@ const PEGASUS_SEGMENT_DEFINITIONS = [
     },
 ];
 
-const LEGACY_ENVIRONMENTS = [
-    "Indoor Home",
-    "Indoor Office",
-    "Indoor Bar Restaurant",
-    "Indoor Retail",
-    "Indoor Venue",
-    "Outdoor Urban",
-    "Outdoor Nature",
-    "Outdoor Adventure",
-    "Outdoor Sports Venue",
-    "Vehicle",
-    "Studio",
-    "Other",
-];
-
-const GARM_SEVERITIES = ["Floor Violation", "High Risk", "Medium Risk", "Low Risk"];
-
-function clampUnitInterval(value) {
-    const n = typeof value === "number" && !Number.isNaN(value) ? value : Number(value);
-    if (!Number.isFinite(n)) return 0;
-    let x = n;
-    if (x > 1) x = x / 10;
-    if (x > 1) x = 1;
-    if (x < 0) x = 0;
-    return x;
+function taskBody(response) {
+    return response?.data ?? response;
 }
 
-function snapEnvironment(raw) {
-    const s = typeof raw === "string" ? raw.trim() : "";
-    if (!s) return "Other";
-    const exact = LEGACY_ENVIRONMENTS.find((e) => e.toLowerCase() === s.toLowerCase());
-    if (exact) return exact;
-    const lower = s.toLowerCase();
-    if (lower.includes("studio")) return "Studio";
-    if (lower.includes("vehicle") || lower.includes("car")) return "Vehicle";
-    if (lower.includes("arena") || lower.includes("stadium") || lower.includes("sports")) return "Outdoor Sports Venue";
-    if (lower.includes("beach") || lower.includes("ocean") || lower.includes("jungle") || lower.includes("island") || lower.includes("camp"))
-        return "Outdoor Nature";
-    if (lower.includes("challenge") || lower.includes("outdoor")) return "Outdoor Adventure";
-    if (lower.includes("urban") || lower.includes("city")) return "Outdoor Urban";
-    if (lower.includes("office")) return "Indoor Office";
-    if (lower.includes("restaurant") || lower.includes("bar")) return "Indoor Bar Restaurant";
-    if (lower.includes("retail") || lower.includes("shop")) return "Indoor Retail";
-    if (lower.includes("venue") || lower.includes("tribal") || lower.includes("council")) return "Indoor Venue";
-    if (lower.includes("home")) return "Indoor Home";
-    return "Other";
+function asString(value) {
+    return typeof value === "string" ? value : "";
 }
 
-function normalizeGarmSeverity(s) {
-    const t = typeof s === "string" ? s.trim() : "";
-    if (GARM_SEVERITIES.includes(t)) return t;
-    const lower = t.toLowerCase();
-    if (lower.includes("floor")) return "Floor Violation";
-    if (lower.includes("high")) return "High Risk";
-    if (lower.includes("medium")) return "Medium Risk";
-    if (lower.includes("low")) return "Low Risk";
-    return "Low Risk";
+function asStringArray(value) {
+    return Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
 }
 
-function parseGarmPipeStrings(items) {
+function asNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+function clamp01(value) {
+    return Math.min(1, Math.max(0, value));
+}
+
+/** Pegasus returns GARM flags as CATEGORY|SEVERITY|EVIDENCE strings per segment_definitions. */
+function parseGarmFlags(items) {
     if (!Array.isArray(items)) return [];
-    const out = [];
+    const flags = [];
     for (const row of items) {
         if (typeof row !== "string" || !row.trim()) continue;
-        const parts = row.split("|").map((p) => p.trim());
+        const parts = row.split("|").map((part) => part.trim());
         if (parts.length < 3) continue;
-        const category = parts[0] || "Unknown";
-        const severity = normalizeGarmSeverity(parts[1]);
-        const evidence = parts.slice(2).join("| ").trim() || "";
-        out.push({ category, severity, evidence });
+        flags.push({
+            category: parts[0],
+            severity: parts[1],
+            evidence: parts.slice(2).join("| ").trim(),
+        });
     }
-    return out;
+    return flags;
 }
 
-function pegasusRowToLegacySegment(row) {
-    const md = row && typeof row === "object" && row.metadata && typeof row.metadata === "object" ? row.metadata : {};
-    const start = row?.start_time ?? row?.startTime;
-    const end = row?.end_time ?? row?.endTime;
-
-    const brand_safety = {
-        is_safe: Boolean(md.brand_safety_is_safe),
-        risk_level: ["Low", "Medium", "High"].includes(md.brand_safety_risk_level) ? md.brand_safety_risk_level : "Low",
-        garm_flags: parseGarmPipeStrings(md.brand_safety_garm_flags),
-    };
-
-    const ad_suitability = {
-        suitable_categories: Array.isArray(md.ad_suitable_categories) ? md.ad_suitable_categories : [],
-        unsuitable_categories: Array.isArray(md.ad_unsuitable_categories) ? md.ad_unsuitable_categories : [],
-        contextual_themes: Array.isArray(md.ad_contextual_themes) ? md.ad_contextual_themes : [],
-        confidence: clampUnitInterval(md.ad_suitability_confidence),
-    };
-
-    const ad_break_fitness = {
-        post_segment_break_quality: ["High", "Medium", "Low"].includes(md.ad_break_post_segment_break_quality)
-            ? md.ad_break_post_segment_break_quality
-            : "Medium",
-        break_type: ["Hard Cut", "Fade", "Narrative Pause", "Topic Shift", "None"].includes(md.ad_break_break_type)
-            ? md.ad_break_break_type
-            : "None",
-        interruption_risk: clampUnitInterval(md.ad_break_interruption_risk),
-        reasoning: typeof md.ad_break_reasoning === "string" ? md.ad_break_reasoning : "",
-    };
-
-    const toneSet = new Set([
-        "Celebratory",
-        "Romantic",
-        "Tense",
-        "Comedic",
-        "Somber",
-        "Inspirational",
-        "Casual",
-        "Dramatic",
-        "Action",
-        "Informational",
-    ]);
-    const sentimentSet = new Set(["Positive", "Neutral", "Negative", "Mixed"]);
+/**
+ * Pegasus segment_definitions only allow flat primitives; the app expects nested
+ * brand_safety / ad_suitability / ad_break_fitness objects for the UI.
+ */
+function mapPegasusSegment(row) {
+    const md = row?.metadata && typeof row.metadata === "object" ? row.metadata : {};
 
     return {
-        start_time: typeof start === "number" ? start : Number(start) || 0,
-        end_time: typeof end === "number" ? end : Number(end) || 0,
-        scene_context: typeof md.scene_context === "string" ? md.scene_context : "",
-        environment: snapEnvironment(md.environment),
-        cast_present: Array.isArray(md.cast_present) ? md.cast_present : [],
-        activities: Array.isArray(md.activities) ? md.activities : [],
-        objects_of_interest: Array.isArray(md.objects_of_interest) ? md.objects_of_interest : [],
-        sentiment: sentimentSet.has(md.sentiment) ? md.sentiment : "Neutral",
-        emotional_intensity: clampUnitInterval(md.emotional_intensity),
-        tone: toneSet.has(md.tone) ? md.tone : "Informational",
-        brand_safety,
-        ad_suitability,
-        ad_break_fitness,
+        start_time: asNumber(row?.start_time ?? row?.startTime),
+        end_time: asNumber(row?.end_time ?? row?.endTime),
+        scene_context: asString(md.scene_context),
+        environment: asString(md.environment),
+        cast_present: asStringArray(md.cast_present),
+        activities: asStringArray(md.activities),
+        objects_of_interest: asStringArray(md.objects_of_interest),
+        sentiment: asString(md.sentiment),
+        emotional_intensity: clamp01(asNumber(md.emotional_intensity)),
+        tone: asString(md.tone),
+        brand_safety: {
+            is_safe: Boolean(md.brand_safety_is_safe),
+            risk_level: asString(md.brand_safety_risk_level),
+            garm_flags: parseGarmFlags(md.brand_safety_garm_flags),
+        },
+        ad_suitability: {
+            suitable_categories: asStringArray(md.ad_suitable_categories),
+            unsuitable_categories: asStringArray(md.ad_unsuitable_categories),
+            contextual_themes: asStringArray(md.ad_contextual_themes),
+            confidence: clamp01(asNumber(md.ad_suitability_confidence)),
+        },
+        ad_break_fitness: {
+            post_segment_break_quality: asString(md.ad_break_post_segment_break_quality),
+            break_type: asString(md.ad_break_break_type),
+            interruption_risk: clamp01(asNumber(md.ad_break_interruption_risk)),
+            reasoning: asString(md.ad_break_reasoning),
+        },
     };
+}
+
+function parsePegasusSceneRows(resultData) {
+    if (resultData == null) return [];
+    let parsed = resultData;
+    if (typeof parsed === "string") {
+        try {
+            parsed = JSON.parse(parsed);
+        } catch {
+            return [];
+        }
+    }
+    const rows = parsed?.scene ?? parsed?.scenes;
+    return Array.isArray(rows) ? rows : [];
 }
 
 function deriveCastFromSegments(segments) {
     const names = new Set();
-    for (const seg of segments) {
-        const cp = seg?.cast_present;
-        if (!Array.isArray(cp)) continue;
-        for (const n of cp) {
-            if (typeof n === "string" && n.trim()) names.add(n.trim());
+    for (const segment of segments) {
+        for (const name of segment.cast_present ?? []) {
+            if (name.trim()) names.add(name.trim());
         }
     }
     return [...names].map((name) => ({
@@ -294,31 +248,6 @@ function deriveCastFromSegments(segments) {
     }));
 }
 
-function parsePegasusTaskData(rawData) {
-    if (rawData == null) return [];
-    let obj = rawData;
-    if (typeof obj === "string") {
-        try {
-            obj = JSON.parse(obj);
-        } catch {
-            return [];
-        }
-    }
-    const scene = obj?.scene ?? obj?.scenes;
-    return Array.isArray(scene) ? scene : [];
-}
-
-function unwrapMaybeData(res) {
-    if (res && typeof res === "object" && res.data != null) {
-        return res.data;
-    }
-    return res;
-}
-
-/**
- * New / cache-miss path: Pegasus 1.5 async time_based_metadata (same contract as prompt_pegasus_test.js).
- * Video must be `{ type: "asset_id", assetId }` for indexed TwelveLabs assets (HLS .m3u8 URLs are not valid `url` input).
- */
 async function runPegasusInventoryAdPlan(tlClient, video) {
     const createRes = await tlClient.analyzeAsync.tasks.create(
         {
@@ -334,39 +263,35 @@ async function runPegasusInventoryAdPlan(tlClient, video) {
         { timeoutInSeconds: 120 },
     );
 
-    const created = unwrapMaybeData(createRes);
-    const taskId = created?.taskId;
+    const taskId = taskBody(createRes)?.taskId;
     if (!taskId) {
         throw new Error("TwelveLabs analyzeAsync did not return a task id");
     }
 
     const pollStart = Date.now();
-    const maxWaitMs = Math.max(120000, (Number(process.env.GENERATE_AD_PLAN_PEGASUS_MAX_MS) || 540000));
+    const maxWaitMs = Math.max(120000, Number(process.env.GENERATE_AD_PLAN_PEGASUS_MAX_MS) || 540000);
 
     while (Date.now() - pollStart < maxWaitMs) {
         const pollRes = await tlClient.analyzeAsync.tasks.retrieve(taskId, { timeoutInSeconds: 90 });
-        const task = unwrapMaybeData(pollRes);
+        const task = taskBody(pollRes);
         const status = task?.status;
 
         if (status === "ready") {
-            const rawData = task?.result?.data;
-            const rows = parsePegasusTaskData(rawData);
-            const segments = rows.map(pegasusRowToLegacySegment).sort((a, b) => a.start_time - b.start_time);
-            const cast = deriveCastFromSegments(segments);
-            return { cast, segments };
+            const rows = parsePegasusSceneRows(task?.result?.data);
+            const segments = rows.map(mapPegasusSegment).sort((a, b) => a.start_time - b.start_time);
+            return { cast: deriveCastFromSegments(segments), segments };
         }
         if (status === "failed") {
-            const msg = task?.error?.message || `Pegasus task ${taskId} failed`;
-            throw new Error(msg);
+            throw new Error(task?.error?.message || `Pegasus task ${taskId} failed`);
         }
-        await new Promise((r) => setTimeout(r, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
     }
 
     throw new Error("Pegasus analysis timed out while waiting for task completion");
 }
 
 export async function POST(request) {
-    const tl_client = getTwelveLabsClient();
+    const tlClient = getTwelveLabsClient();
     const { videoId } = await request.json();
 
     if (!videoId) {
@@ -376,31 +301,29 @@ export async function POST(request) {
     const blobName = `ad_plan_timeline_${CACHE_VERSION}_${videoId}.json`;
 
     try {
-        /* ── Cache hit: unchanged legacy JSON (old videos) ─────────────────── */
         const blobs = await listAllBlobs(blobName);
         if (blobs.length > 0) {
             console.log(`[generateAdPlan] Cache HIT for ${videoId}`);
             const best = blobs.reduce((a, b) =>
-                new Date(a.uploadedAt).getTime() > new Date(b.uploadedAt).getTime() ? a : b
+                new Date(a.uploadedAt).getTime() > new Date(b.uploadedAt).getTime() ? a : b,
             );
             const cachedRes = await fetch(best.url);
             if (cachedRes.ok) {
-                const cachedData = await cachedRes.json();
-                if (cachedData?.segments?.length > 0) {
-                    return NextResponse.json(cachedData, { status: 200 });
+                const cached = await cachedRes.json();
+                if (cached?.segments?.length > 0) {
+                    return NextResponse.json(cached, { status: 200 });
                 }
                 console.log(`[generateAdPlan] Cached data has 0 segments, regenerating`);
             }
         }
 
-        /* ── Cache miss: Pegasus 1.5 (new videos) ───────────────────────────── */
-        console.log(`[generateAdPlan] Cache MISS for ${videoId} — running Pegasus 1.5 analyzeAsync`);
+        console.log(`[generateAdPlan] Cache MISS for ${videoId} — running Pegasus 1.5`);
 
         const indexId = await getIndexId(INVENTORY_INDEX_NAME);
-        const videoData = await tl_client.indexes.videos.retrieve(indexId, videoId);
-        const hlsData = videoData?.hls || {};
-        const videoUrl = hlsData.videoUrl || hlsData.video_url || null;
-        const apiAssetId =
+        const videoData = await tlClient.indexes.videos.retrieve(indexId, videoId);
+        const hls = videoData?.hls || {};
+        const videoUrl = hls.videoUrl || hls.video_url || null;
+        const assetId =
             typeof videoData?.assetId === "string" && /^[a-f0-9]{24}$/i.test(videoData.assetId.trim())
                 ? videoData.assetId.trim()
                 : typeof videoData?.asset_id === "string" && /^[a-f0-9]{24}$/i.test(videoData.asset_id.trim())
@@ -408,7 +331,7 @@ export async function POST(request) {
                   : null;
 
         const resolved = resolveAsyncAnalyzeVideo({
-            assetId: apiAssetId || undefined,
+            assetId: assetId || undefined,
             videoUrl: typeof videoUrl === "string" ? videoUrl : "",
             videoId,
         });
@@ -423,34 +346,30 @@ export async function POST(request) {
             );
         }
 
-        console.log(`[generateAdPlan] Pegasus video input: ${resolved.source} (${resolved.video.type})`);
+        console.log(`[generateAdPlan] Pegasus input: ${resolved.source} (${resolved.video.type})`);
 
-        const { cast, segments } = await runPegasusInventoryAdPlan(tl_client, resolved.video);
+        const { cast, segments } = await runPegasusInventoryAdPlan(tlClient, resolved.video);
 
-        console.log(
-            `[generateAdPlan] Pegasus complete for ${videoId}: ${cast.length} cast (derived), ${segments.length} segments`,
-        );
+        console.log(`[generateAdPlan] Pegasus done: ${cast.length} cast, ${segments.length} segments`);
 
         if (segments.length === 0) {
-            console.error(`[generateAdPlan] No segments produced for ${videoId}`);
             return NextResponse.json({ error: "Analysis produced no segments" }, { status: 500 });
         }
 
-        const finalPayload = { cast, segments };
+        const payload = { cast, segments };
 
         try {
-            await put(blobName, JSON.stringify(finalPayload), {
+            await put(blobName, JSON.stringify(payload), {
                 access: "public",
                 addRandomSuffix: false,
                 allowOverwrite: true,
                 contentType: "application/json",
             });
-            console.log(`[generateAdPlan] Cached final result: ${cast.length} cast, ${segments.length} segments → ${blobName}`);
         } catch (blobErr) {
-            console.error(`[generateAdPlan] Blob cache write failed:`, blobErr);
+            console.error("[generateAdPlan] Blob cache write failed:", blobErr);
         }
 
-        return NextResponse.json(finalPayload, { status: 200 });
+        return NextResponse.json(payload, { status: 200 });
     } catch (error) {
         console.error("[generateAdPlan] Fatal error:", error);
         return NextResponse.json(
