@@ -5,14 +5,25 @@ import { useState, useEffect, useCallback } from "react";
 /** Browser-local only — renames and hides are not sent to TwelveLabs or any API. */
 const STORAGE_KEY = "tl_video_inventory_prefs_v1";
 
+/** Shared demo videos visible to all users in video inventory. */
+export const VIDEO_INVENTORY_ALLOWED_IDS = [
+    "69d5ed895570f761f3911887",
+    "69d5edbd0189608cb880f639",
+    "69d5edf70189608cb880f64c",
+    "69d5ee36973ca4e1ca50d0e1",
+    "6a06865b6661edbede2db64c",
+] as const;
+
 export interface VideoInventoryPrefs {
     /** Custom display names keyed by TwelveLabs video id */
     renames: Record<string, string>;
     /** Video ids hidden from this browser's inventory view */
     hiddenIds: string[];
+    /** Video ids uploaded from this browser — visible only to this user */
+    uploadedIds: string[];
 }
 
-const EMPTY_PREFS: VideoInventoryPrefs = { renames: {}, hiddenIds: [] };
+const EMPTY_PREFS: VideoInventoryPrefs = { renames: {}, hiddenIds: [], uploadedIds: [] };
 
 export function filenameToDisplayName(filename: string): string {
     return filename.replace(/\.[^.]+$/, "") || "Untitled";
@@ -27,6 +38,7 @@ export function readVideoInventoryPrefs(): VideoInventoryPrefs {
         return {
             renames: parsed.renames && typeof parsed.renames === "object" ? parsed.renames : {},
             hiddenIds: Array.isArray(parsed.hiddenIds) ? parsed.hiddenIds : [],
+            uploadedIds: Array.isArray(parsed.uploadedIds) ? parsed.uploadedIds : [],
         };
     } catch {
         return EMPTY_PREFS;
@@ -52,6 +64,12 @@ export function getVideoDisplayName(videoId: string, fallbackFilename?: string |
 
 export function isVideoHiddenLocally(videoId: string): boolean {
     return readVideoInventoryPrefs().hiddenIds.includes(videoId);
+}
+
+export function isVideoVisibleInInventory(videoId: string, prefs: VideoInventoryPrefs = readVideoInventoryPrefs()): boolean {
+    if (prefs.hiddenIds.includes(videoId)) return false;
+    if ((VIDEO_INVENTORY_ALLOWED_IDS as readonly string[]).includes(videoId)) return true;
+    return prefs.uploadedIds.includes(videoId);
 }
 
 export function useVideoInventoryPrefs() {
@@ -89,6 +107,18 @@ export function useVideoInventoryPrefs() {
         [prefs, persist],
     );
 
+    const registerUploadedVideo = useCallback((videoId: string) => {
+        if (!videoId) return;
+        const current = readVideoInventoryPrefs();
+        if (current.uploadedIds.includes(videoId)) {
+            setPrefs(current);
+            return;
+        }
+        const next = { ...current, uploadedIds: [...current.uploadedIds, videoId] };
+        writeVideoInventoryPrefs(next);
+        setPrefs(next);
+    }, []);
+
     const getDisplayName = useCallback(
         (videoId: string, fallbackFilename?: string | null) => {
             const custom = prefs.renames[videoId]?.trim();
@@ -104,5 +134,15 @@ export function useVideoInventoryPrefs() {
         [prefs],
     );
 
-    return { prefs, renameVideo, hideVideo, getDisplayName, isHidden };
+    const isUserUploaded = useCallback(
+        (videoId: string) => prefs.uploadedIds.includes(videoId),
+        [prefs.uploadedIds],
+    );
+
+    const isVisible = useCallback(
+        (videoId: string) => isVideoVisibleInInventory(videoId, prefs),
+        [prefs],
+    );
+
+    return { prefs, renameVideo, hideVideo, registerUploadedVideo, getDisplayName, isHidden, isUserUploaded, isVisible };
 }

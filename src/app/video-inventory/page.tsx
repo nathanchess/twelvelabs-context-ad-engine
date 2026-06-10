@@ -59,24 +59,11 @@ export default function VideoInventoryPage() {
         includeEmbeddings: false,
         refetchOnMount: true,
     });
-    const { renameVideo, hideVideo, getDisplayName, isHidden } = useVideoInventoryPrefs();
+    const { renameVideo, hideVideo, registerUploadedVideo, getDisplayName, isVisible } = useVideoInventoryPrefs();
 
-    const hiddenVideoIDs = [
-        "69ba18582fc4a03916fd0cd5",
-        "69ba18b7ff6d03487ddab3ef",
-        "69ba190b3571b38304a680b0",
-        "69ba19712fc4a03916fd0d7b",
-        "69ba19ddbd3198ff9f5ae83b",
-        "6a035a24aa1ea09f190cc121",
-        '6a07434e77e1b76830913d87',
-        "6a073fe05a237763f2ba3bd9"
-    ]
-
-    // Split ready vs. still-indexing videos
-    const readyVideos = allVideos.filter(
-        (v) => !v.processing && !hiddenVideoIDs.includes(v.id) && !isHidden(v.id),
-    );
-    const processingVideos = allVideos.filter((v) => v.processing);
+    // Split ready vs. still-indexing videos (allowlisted + this browser's uploads only)
+    const readyVideos = allVideos.filter((v) => !v.processing && isVisible(v.id));
+    const processingVideos = allVideos.filter((v) => v.processing && isVisible(v.id));
 
     // Debounced semantic search via TwelveLabs /api/search
     useEffect(() => {
@@ -451,6 +438,7 @@ export default function VideoInventoryPage() {
 
             <VideoInventoryUploadModal
                 open={showUploadModal}
+                onVideoIndexed={registerUploadedVideo}
                 onClose={(didUpload) => {
                     setShowUploadModal(false);
                     if (didUpload) refreshVideos();

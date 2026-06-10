@@ -7,6 +7,8 @@ import { invalidateVideoCache } from "../lib/videoCache";
 interface VideoInventoryUploadModalProps {
     open: boolean;
     onClose: (didUpload?: boolean) => void;
+    /** Called when TwelveLabs returns a video id for a successful index */
+    onVideoIndexed?: (videoId: string) => void;
     /** TwelveLabs index name for video indexing */
     targetIndex?: string;
 }
@@ -205,6 +207,7 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
 export default function VideoInventoryUploadModal({
     open,
     onClose,
+    onVideoIndexed,
     targetIndex = "tl-context-engine-videos",
 }: VideoInventoryUploadModalProps) {
     const [tags, setTags] = useState<string[]>([]);
@@ -425,6 +428,9 @@ export default function VideoInventoryUploadModal({
                                     tlCompleted: data.completed || 0,
                                 }));
                             } else if (eventName === "video_done") {
+                                if (data.video?.videoId) {
+                                    onVideoIndexed?.(data.video.videoId);
+                                }
                                 setUploadProgress((prev) => ({
                                     ...prev,
                                     percent: tlPercent,
@@ -439,6 +445,11 @@ export default function VideoInventoryUploadModal({
                                     errors: [...prev.errors, `TwelveLabs: ${data.error}`],
                                 }));
                             } else if (eventName === "complete") {
+                                for (const video of data.videos ?? []) {
+                                    if (video?.videoId) {
+                                        onVideoIndexed?.(video.videoId);
+                                    }
+                                }
                                 // Invalidate cached video data so next page load fetches fresh
                                 invalidateVideoCache();
                                 setDidUpload(true);
