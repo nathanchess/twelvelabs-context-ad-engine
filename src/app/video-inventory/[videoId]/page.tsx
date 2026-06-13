@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import Hls from "hls.js";
 import { hlsClientConfig } from "../../lib/hlsClientConfig";
 import { useVideos } from "../../lib/videoCache";
+import { useVideoInventoryPrefs } from "../../lib/videoInventoryStore";
 import {
   identifyAdBreaks,
   buildUserEligibilityCache,
@@ -517,6 +518,7 @@ export default function VideoInventoryDetailPage() {
   const videoId = params.videoId as string;
 
   const { videos, loading } = useVideos("tl-context-engine-videos", { includeEmbeddings: false });
+  const { getDisplayName } = useVideoInventoryPrefs();
   const video = useMemo(() => videos.find((v) => v.id === videoId) || null, [videos, videoId]);
 
   /* Video player state */
@@ -877,8 +879,7 @@ export default function VideoInventoryDetailPage() {
     }
   }, [adPlaybackState, videoTime]);
 
-  const filename = video?.systemMetadata?.filename || "Untitled";
-  const displayName = filename.replace(/\.[^.]+$/, "");
+  const displayName = video ? getDisplayName(video.id) : "Untitled";
   const analysisTitle = summaryData?.proposedTitle?.trim() || "Untitled Analysis";
   const duration = video?.systemMetadata?.duration || 0;
   const width = video?.systemMetadata?.width || 0;
@@ -902,7 +903,7 @@ export default function VideoInventoryDetailPage() {
               </Link>
             </div>
             <h1 className="text-[26px] font-bold tracking-[-0.8px] text-text-primary">{analysisTitle}</h1>
-            <p className="text-sm text-text-tertiary mt-1">File name: {displayName}</p>
+            <p className="text-sm text-text-tertiary mt-1">{displayName}</p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">

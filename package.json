@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "rename-assets": "node scripts/rename-tl-assets.js",
+    "rename-assets:dry-run": "node scripts/rename-tl-assets.js --dry-run"
   },
   "dependencies": {
     "@databricks/sql": "^1.13.0",

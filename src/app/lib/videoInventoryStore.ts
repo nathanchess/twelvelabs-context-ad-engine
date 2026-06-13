@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { resolveVideoDisplayName } from "./videoDisplayNames";
 
 /** Browser-local only — renames and hides are not sent to TwelveLabs or any API. */
 const STORAGE_KEY = "tl_video_inventory_prefs_v1";
@@ -54,12 +55,9 @@ function writeVideoInventoryPrefs(prefs: VideoInventoryPrefs): void {
     }
 }
 
-export function getVideoDisplayName(videoId: string, fallbackFilename?: string | null): string {
+export function getVideoDisplayName(videoId: string): string {
     const prefs = readVideoInventoryPrefs();
-    const custom = prefs.renames[videoId]?.trim();
-    if (custom) return custom;
-    if (fallbackFilename) return filenameToDisplayName(fallbackFilename);
-    return "Untitled";
+    return resolveVideoDisplayName(videoId, { localRename: prefs.renames[videoId] });
 }
 
 export function isVideoHiddenLocally(videoId: string): boolean {
@@ -120,12 +118,7 @@ export function useVideoInventoryPrefs() {
     }, []);
 
     const getDisplayName = useCallback(
-        (videoId: string, fallbackFilename?: string | null) => {
-            const custom = prefs.renames[videoId]?.trim();
-            if (custom) return custom;
-            if (fallbackFilename) return filenameToDisplayName(fallbackFilename);
-            return "Untitled";
-        },
+        (videoId: string) => resolveVideoDisplayName(videoId, { localRename: prefs.renames[videoId] }),
         [prefs],
     );
 

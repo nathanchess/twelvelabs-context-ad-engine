@@ -291,8 +291,7 @@ export default function VideoInventoryPage() {
 
                     <div className="flex gap-3 flex-wrap">
                         {processingVideos.map((video) => {
-                            const filename = video.systemMetadata?.filename || 'Untitled';
-                            const displayName = filename.replace(/\.[^.]+$/, '');
+                            const displayName = getDisplayName(video.id);
                             const thumb = video.hls?.thumbnailUrls?.[0];
                             return (
                                 <div key={video.id} className="relative w-32 rounded-xl overflow-hidden border border-amber-200 bg-amber-100 shrink-0 group">
@@ -402,7 +401,7 @@ export default function VideoInventoryPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredVideos.map((video) => {
                             const match = searchResults?.find((r) => r.videoId === video.id || r.videoId === video.hls?.videoUrl);
-                            const displayName = getDisplayName(video.id, video.systemMetadata?.filename);
+                            const displayName = getDisplayName(video.id);
                             return (
                                 <div key={video.id} className="relative overflow-visible">
                                     <VideoInventoryCard

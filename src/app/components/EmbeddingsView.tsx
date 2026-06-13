@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, ZoomIn, ZoomOut, Maximize, Clock, FileText, X, ScatterChart, Cpu, Database, Download } from 'lucide-react';
 import { CachedVideo } from '../lib/videoCache';
+import { resolveVideoDisplayName } from '../lib/videoDisplayNames';
 import type { AdMetadataExportRow } from '../lib/databricksExportSql';
 import { embeddingVectorToJson, getMarengoAdVectorForCreative } from '../lib/marengoAdEmbedding';
 import DatabricksExportModal from './DatabricksExportModal';
@@ -52,7 +53,7 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
             const adVec = getMarengoAdVectorForCreative(v);
             const marengoJson = embeddingVectorToJson(adVec);
             return {
-                creativeId: String(v.systemMetadata?.filename || v.id),
+                creativeId: resolveVideoDisplayName(v.id),
                 campaignName: String(ana?.proposedTitle || ""),
                 durationSeconds: Math.round(v.systemMetadata?.duration || 0),
                 extractedVisualContexts: JSON.stringify(ana?.recommendedContexts || []),
@@ -479,7 +480,7 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                         </div>
                         <div className="p-4">
                             <h3 className="font-semibold text-text-primary line-clamp-1 mb-1">
-                                {selectedVideo.systemMetadata?.filename || selectedVideo.id}
+                                {resolveVideoDisplayName(selectedVideo.id)}
                             </h3>
                             <div className="flex items-center gap-4 text-xs text-text-tertiary mb-3">
                                 <span className="flex items-center gap-1">
@@ -543,7 +544,7 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                             ) : (isTableExpanded ? videos : videos.slice(0, 5)).map((v, idx) => {
                                 const ana = analysisMap[v.id];
 
-                                const creativeId = v.systemMetadata?.filename || v.id;
+                                const creativeId = resolveVideoDisplayName(v.id);
                                 const duration = `${Math.round(v.systemMetadata?.duration || 0)}s`;
 
                                 const campaignName = ana?.proposedTitle || <span className="text-text-tertiary italic text-[11px]">Pending Analysis...</span>;
