@@ -247,7 +247,28 @@ export default function Sidebar() {
         </nav>
 
         {/* ── Bottom Section ───────────────────────────────── */}
-        <div className="border-t border-border-light px-3 py-3">
+        <div className="border-t border-border-light px-3 py-3 flex flex-col gap-2">
+          {!collapsed ? (
+            <div
+              className="flex items-center justify-center w-full py-2 px-3 rounded-lg bg-gray-50 border border-border-light"
+              aria-label="Demo application"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
+                Demo App
+              </span>
+            </div>
+          ) : (
+            <div
+              className="flex items-center justify-center w-9 h-9 mx-auto rounded-lg bg-gray-50 border border-border-light"
+              title="Demo App"
+              aria-label="Demo application"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary">
+                D
+              </span>
+            </div>
+          )}
+
           <button
             onClick={() => setSettingsOpen(true)}
             title={collapsed ? "Settings" : undefined}
