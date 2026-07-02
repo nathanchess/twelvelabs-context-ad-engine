@@ -1,16 +1,45 @@
 "use client";
 
+import {
+  AnalyzeIcon,
+  ApiDocIcon,
+  ArrowBoxRightIcon,
+  Button,
+  CheckmarkIcon,
+  ContactSalesIcon,
+  EmbedIcon,
+  GridIcon,
+  MarengoIcon,
+  PegasusIcon,
+  ProfileIcon,
+  RocketIcon,
+  ScalableIcon,
+  SearchIcon,
+  SegmentIcon,
+  ServersIcon,
+  Text,
+  TwelveLabsLogo,
+  VideoIcon,
+} from "@twelvelabs-io/react";
 import ScrollFadeUp from "./components/ScrollFadeUp";
 import ScrollProgressBar from "./components/ScrollProgressBar";
+
+type IconTone = "embed" | "search" | "analyze" | "brand";
+
+const iconToneClass: Record<IconTone, string> = {
+  embed: "bg-surface-embed text-foreground-embed",
+  search: "bg-surface-search text-foreground-search",
+  analyze: "bg-surface-analyze text-foreground-analyze",
+  brand: "bg-tl-master-brand-light-green text-tl-master-brand-dark-green",
+};
 
 /* ── Divider ────────────────────────────────────────────── */
 function Divider() {
   return (
     <div className="my-12 flex items-center gap-4 max-w-[1200px] mx-auto px-8">
-      <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, #E5E7EB, transparent)" }} />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/TwelveLabs-Symbol.png" alt="" className="w-6 h-6 rounded opacity-40" />
-      <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, #E5E7EB, transparent)" }} />
+      <div className="flex-1 h-px bg-border-secondary" />
+      <TwelveLabsLogo className="h-5 w-auto opacity-40" />
+      <div className="flex-1 h-px bg-border-secondary" />
     </div>
   );
 }
@@ -25,10 +54,10 @@ function CodeBlock({ filename, language, code }: { filename: string; language: s
           <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
           <span className="w-3 h-3 rounded-full bg-[#28C840]" />
         </div>
-        <span className="text-[11px] text-[#888] font-mono ml-2">{filename}</span>
+        <span className="text-[11px] text-[#888] font-tl-mono ml-2">{filename}</span>
         <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-[#666]">{language}</span>
       </div>
-      <pre className="px-5 py-4 text-[12.5px] leading-[1.7] font-mono overflow-x-auto text-[#e1e1e1] whitespace-pre">
+      <pre className="px-5 py-4 text-[12.5px] leading-[1.7] font-tl-mono overflow-x-auto text-[#e1e1e1] whitespace-pre">
         <code>{code}</code>
       </pre>
     </div>
@@ -36,14 +65,24 @@ function CodeBlock({ filename, language, code }: { filename: string; language: s
 }
 
 /* ── Feature card ───────────────────────────────────────── */
-function FeatureCard({ title, description, icon, iconBg }: { title: string; description: string; icon: React.ReactNode; iconBg: string }) {
+function FeatureCard({
+  title,
+  description,
+  icon,
+  tone,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  tone: IconTone;
+}) {
   return (
-    <div className="p-6 rounded-2xl border border-[#E5E7EB] bg-white hover:border-gray-300 transition-all duration-200 hover:shadow-sm">
-      <div className={`inline-flex p-2.5 rounded-xl mb-4 ${iconBg}`}>
+    <div className="rounded-2xl border border-border-secondary bg-surface-white p-6 transition-all duration-200 hover:border-border-primary hover:shadow-sm">
+      <div className={`mb-4 inline-flex rounded-xl p-2.5 ${iconToneClass[tone]}`}>
         {icon}
       </div>
-      <h3 className="font-semibold text-gray-900 text-[15px] mb-2 tracking-tight">{title}</h3>
-      <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+      <h3 className="mb-2 text-[15px] font-semibold tracking-tight text-foreground-body">{title}</h3>
+      <p className="text-sm leading-relaxed text-foreground-subtle">{description}</p>
     </div>
   );
 }
@@ -168,53 +207,53 @@ AS v(creative_id, campaign_name, duration_sec, extracted_visual_contexts,
 ];
 
 /* ── Why TwelveLabs rows ────────────────────────────────── */
-const whyRows = [
+const whyRows: {
+  icon: React.ReactNode;
+  name: string;
+  description: string;
+  tone: IconTone;
+}[] = [
   {
-    icon: (
-      <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" /><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" /><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" /><path d="M9 11.5h5M11.5 9v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-    ),
+    icon: <MarengoIcon className="size-5" />,
     name: "Marengo 3.0 — Multimodal Embeddings",
     description:
       "State-of-the-art video representation model that encodes visual, audio, and textual content into a unified 512-dimensional vector space. Powers semantic scene matching in this engine.",
+    tone: "embed",
   },
   {
-    icon: (
-      <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><path d="M2 13l4-8 3 5 2-3 3 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-    ),
+    icon: <PegasusIcon className="size-5" />,
     name: "Pegasus 1.5 — Generative Video Understanding",
     description:
       "Drives time-based scene classification and metadata (including semantic Content Taxonomy 3.1 alignment via OpenAI embeddings) — a core input to ad break and IAB labeling in this app.",
+    tone: "analyze",
   },
   {
-    icon: (
-      <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.2" /></svg>
-    ),
+    icon: <ScalableIcon className="size-5" />,
     name: "Enterprise-Grade Infrastructure",
     description:
       "SOC 2 compliant, built for scale. Process thousands of hours of video via a simple REST API with consistent, predictable pricing and 99.9% uptime.",
+    tone: "brand",
   },
   {
-    icon: (
-      <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><path d="M3 8h10M8 3l5 5-5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-    ),
+    icon: <RocketIcon className="size-5" />,
     name: "Research-Backed Innovation",
     description:
       "TwelveLabs' research team continuously improves model accuracy across visual, audio, and textual modalities — improving ad relevance with every model release.",
+    tone: "search",
   },
 ];
-
-/* ── Gradient constants ─────────────────────────────────── */
-const GRAD = "linear-gradient(135deg, #D9F99D 0%, #FDE047 100%)";
-const GRAD_WASH = "linear-gradient(135deg, rgba(217,249,157,0.15) 0%, rgba(253,224,71,0.15) 100%)";
 const ARCHITECTURE_LUCIDCHART_URL =
   "https://lucid.app/lucidchart/ef8d11e1-3f00-4bf0-b411-ab8e3bb3606b/edit?view_items=o97PhyrSgvaW%2Cyc8PiHljiUJe%2CD_7PDd.qF_w~%2CUh8PfmArC9R3%2Cgr8PjOz-iagi%2C-u8PfT3QVmS1%2COk8PFHaFqYe5%2CUj8PTZaGtt3P%2C6z8PX_fhmaE8%2CAN8PxOhZuzK-%2C0N8P32C~nzbK%2CoQ8PNkmzbcNI%2CBQ8P70VmeSOz%2C0N8PiNmrzY.o%2C0N8P5JYxcZ3Z%2C0N8PcvJGj~YA%2C0N8PAghTJfLr%2C0N8PNwKd5Cer%2C0N8P7ZQJkL5k%2C0N8P1P9s-s8g%2CBy8P8HKsplEp%2C-y8PC8hX52xj%2Cux8PV37i~0Bz%2C8x8P6biPsTC4%2CVx8Pvj2yoMg7%2Cuz8PB9v8U2~o%2Cwz8PkQRStyhT%2C0N8PPFxVCJfI%2Cw97PAN.GCjSP%2C5a8PobQdNG8C%2CZj8PDP9VmazD%2CON8PLiaeNf4n%2C6z8PPERmzORN%2Cpv8Pu3fnl9ib%2CBj8PQVmqVxYI%2CPr8PFA4giQX9%2Cfo8PU5izetbk%2CM_7PeRh-oBjv%2C0h8PZqnkdim4%2C4j8PblhJtVSw%2CuQ8PeQHU0Icd%2CxQ8PWNynGcvq%2CbA8Pz~9cV5Cs%2Cym8PRF9Y6gG7%2Cvr8PzYJ5LtX4%2CBu8PNideLDRC%2CKN8PBxiACflG%2C7N8PCwevxQbp&page=0_0&invitationId=inv_09de1972-142b-4369-9df4-f91eb3f5a949";
 
 const WALKTHROUGH_YOUTUBE_EMBED = "https://www.youtube.com/embed/br_Hdc3yCY0";
 
+const CTA_GRAD_WASH =
+  "linear-gradient(135deg, rgba(217,249,157,0.15) 0%, rgba(253,224,71,0.15) 100%)";
+
 /* ── Page ───────────────────────────────────────────────── */
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-surface-white">
       <ScrollProgressBar />
 
       <ScrollFadeUp order={0}>
@@ -223,29 +262,30 @@ export default function Home() {
 
         {/* Label row */}
         <div className="flex items-center gap-3 mb-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/TwelveLabs-Symbol.png" alt="TwelveLabs" className="w-10 h-10 rounded-xl" />
-          <span className="text-[11px] font-bold uppercase tracking-[2px]" style={{ color: "#84CC16" }}>
+          <TwelveLabsLogo className="h-10 w-auto" />
+          <Text variant="all-caps-mini" className="text-tl-master-brand-dark-green">
             TwelveLabs
-          </span>
-          <span className="text-[11px] text-gray-400">•</span>
+          </Text>
+          <span className="text-[11px] text-foreground-muted">•</span>
           <a
             href="https://docs.twelvelabs.io/docs/introduction"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] font-semibold uppercase tracking-[2px] text-gray-400 hover:text-gray-900 transition-colors"
+            className="text-[11px] font-semibold uppercase tracking-[2px] text-foreground-muted transition-colors hover:text-foreground-body"
           >
             Documentation
           </a>
-          <span className="text-[11px] text-gray-400">•</span>
-          <span className="text-[11px] font-semibold uppercase tracking-[2px] text-gray-400">Guide</span>
+          <span className="text-[11px] text-foreground-muted">•</span>
+          <Text variant="all-caps-mini" className="text-foreground-muted">
+            Guide
+          </Text>
         </div>
 
         {/* Headline */}
-        <h1 className="text-[42px] font-bold tracking-[-2px] text-gray-900 leading-[1.1] mb-5 max-w-[700px]">
+        <h1 className="text-[42px] font-bold tracking-[-2px] text-foreground-body leading-[1.1] mb-5 max-w-[700px]">
           Contextual Ad Engine
         </h1>
-        <p className="text-[17px] text-gray-500 leading-relaxed max-w-[640px] mb-8">
+        <p className="text-[17px] text-foreground-subtle leading-relaxed max-w-[640px] mb-8">
           Upload broadcast footage, let TwelveLabs&rsquo; multimodal models identify ideal ad breaks,
           rank ads by viewer affinity and scene fit, and preview ad-injected video — all from a
           single dashboard.
@@ -253,42 +293,56 @@ export default function Home() {
 
         {/* CTA Buttons */}
         <div className="flex items-center gap-3 flex-wrap mb-12">
-          <a
-            href="https://docs.twelvelabs.io/docs/introduction"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-gray-900 transition-all hover:brightness-95"
-            style={{ background: GRAD }}
+          <Button
+            asChild
+            variant="primary"
+            size="lg"
           >
-            <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.3" /><path d="M5 6h6M5 8.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>
-            Read the Docs
-            <svg viewBox="0 0 10 10" fill="none" className="w-3 h-3 opacity-60"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </a>
-          <a
-            href="https://github.com/nathanchess/twelvelabs-context-ad-engine/tree/main"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-black hover:rounded-2xl transition-all duration-200"
+            <a
+              href="https://docs.twelvelabs.io/docs/introduction"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ApiDocIcon className="size-4" />
+              Read the Docs
+              <ArrowBoxRightIcon className="size-3 opacity-60" />
+            </a>
+          </Button>
+          <Button
+            asChild
+            variant="secondary"
+            size="lg"
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" /></svg>
-            View Source
-            <svg viewBox="0 0 10 10" fill="none" className="w-3 h-3 opacity-60"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </a>
-          <a
-            href="https://www.twelvelabs.io/contact"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-[#E5E7EB] text-gray-500 font-semibold text-sm hover:border-gray-400 hover:text-gray-900 transition-colors"
+            <a
+              href="https://github.com/nathanchess/twelvelabs-context-ad-engine/tree/main"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Source
+              <ArrowBoxRightIcon className="size-3 opacity-60" />
+            </a>
+          </Button>
+          <Button
+            asChild
+            variant="outlined-gray"
+            size="lg"
           >
-            Talk to Sales
-            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </a>
+            <a
+              href="https://www.twelvelabs.io/contact"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ContactSalesIcon className="size-4" />
+              Talk to Sales
+              <ArrowBoxRightIcon className="size-3" />
+            </a>
+          </Button>
         </div>
 
         {/* Walkthrough (YouTube) */}
         <div className="mb-4">
-          <p className="text-[13px] font-medium text-gray-500 mb-3">Full application walkthrough</p>
-          <div className="relative w-full aspect-video rounded-2xl border border-[#E5E7EB] overflow-hidden bg-black shadow-sm">
+          <p className="text-[13px] font-medium text-foreground-subtle mb-3">Full application walkthrough</p>
+          <div className="relative w-full aspect-video rounded-2xl border border-border-secondary overflow-hidden bg-black shadow-sm">
             <iframe
               className="absolute inset-0 w-full h-full"
               src={WALKTHROUGH_YOUTUBE_EMBED}
@@ -301,7 +355,7 @@ export default function Home() {
         </div>
 
         {/* Architecture diagram */}
-        <div className="rounded-2xl border border-[#E5E7EB] bg-gray-50 p-4">
+        <div className="rounded-2xl border border-border-secondary bg-surface-body p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/Architecture.png"
@@ -315,12 +369,10 @@ export default function Home() {
             href={ARCHITECTURE_LUCIDCHART_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-foreground-subtle hover:text-foreground-body font-medium transition-colors"
           >
             View full-screen architecture
-            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3" aria-hidden>
-              <path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ArrowBoxRightIcon className="size-3" aria-hidden />
           </a>
         </div>
       </section>
@@ -329,17 +381,17 @@ export default function Home() {
       <ScrollFadeUp order={1}>
       {/* ── Problem Statement ─────────────────────────────── */}
       <section className="px-8 py-12 max-w-[1200px] mx-auto">
-        <h2 className="text-[28px] font-bold tracking-[-1px] text-gray-900 mb-4">
+        <h2 className="text-[28px] font-bold tracking-[-1px] text-foreground-body mb-4">
           The Contextual Ad Gap
         </h2>
-        <p className="text-[15px] text-gray-500 leading-relaxed max-w-[780px] mb-4">
-          Streaming platforms insert ads based on <strong className="text-gray-900">demographic targeting alone</strong> — a beer ad plays
+        <p className="text-[15px] text-foreground-subtle leading-relaxed max-w-[780px] mb-4">
+          Streaming platforms insert ads based on <strong className="text-foreground-body">demographic targeting alone</strong> — a beer ad plays
           during a somber funeral scene; a luxury car ad interrupts a comedic moment. The mismatch erodes
           viewer trust and brand equity.
         </p>
-        <p className="text-[15px] text-gray-500 leading-relaxed max-w-[780px]">
+        <p className="text-[15px] text-foreground-subtle leading-relaxed max-w-[780px]">
           TwelveLabs&rsquo; multimodal models unlock a new primitive:{" "}
-          <strong className="text-gray-900">scene-level understanding</strong>. By knowing exactly what is
+          <strong className="text-foreground-body">scene-level understanding</strong>. By knowing exactly what is
           happening in every second of video — the emotion, the environment, the objects, the dialogue — we
           can match ads to moments that amplify rather than interrupt the viewer experience.
         </p>
@@ -355,77 +407,35 @@ export default function Home() {
               value: "40+",
               label: "Ads in inventory",
               sub: "",
-              icon: (
-                <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4" aria-hidden>
-                  <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                  <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                  <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                  <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                </svg>
-              ),
+              icon: <GridIcon className="size-4" />,
             },
             {
               value: "3",
               label: "User Profiles",
               sub: "",
-              icon: (
-                <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4" aria-hidden>
-                  <circle cx="3.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M1.5 12.5c0-1.2 0.9-2 2-2s2 0.8 2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  <circle cx="8" cy="5" r="2" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M6 12.5c0-1.2 0.9-2 2-2s2 0.8 2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  <circle cx="12.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.2" />
-                  <path d="M10.5 12.5c0-1.2 0.9-2 2-2s2 0.8 2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
-              ),
+              icon: <ProfileIcon className="size-4" />,
             },
             {
               value: "512",
               label: "Vector Embedding Dimensions",
               sub: "",
-              icon: (
-                <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4" aria-hidden>
-                  <circle cx="3" cy="4" r="1.5" fill="currentColor" />
-                  <circle cx="8" cy="3" r="1.5" fill="currentColor" />
-                  <circle cx="13" cy="5" r="1.5" fill="currentColor" />
-                  <circle cx="5" cy="10" r="1.5" fill="currentColor" />
-                  <circle cx="11" cy="9" r="1.5" fill="currentColor" />
-                  <circle cx="8" cy="13" r="1.5" fill="currentColor" />
-                  <path
-                    d="M4.2 4.8l2.2 3.8M8 4.5v4.5M12.2 5.8l-2.8 2.2M5.8 10.2l1.8 2.3M10.5 9.5l-1.2 2.8"
-                    stroke="currentColor"
-                    strokeWidth="0.75"
-                    strokeLinecap="round"
-                    opacity={0.45}
-                  />
-                </svg>
-              ),
+              icon: <EmbedIcon className="size-4" />,
             },
             {
               value: "3",
               label: "Safety modes",
               sub: "",
-              icon: (
-                <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4" aria-hidden>
-                  <path
-                    d="M8 1.5l5 2v5.2c0 3.4-2.4 6-5 6.8-2.6-.8-5-3.4-5-6.8V3.5l5-2z"
-                    stroke="currentColor"
-                    strokeWidth="1.2"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M5 6.5h6M5 8.75h6M5 11h4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-                </svg>
-              ),
+              icon: <ServersIcon className="size-4" />,
             },
           ].map((s) => (
-            <div key={s.label} className="flex items-center gap-4 rounded-xl border border-[#E5E7EB] bg-white p-4">
-              <div className="p-2 rounded-lg shrink-0" style={{ background: "rgba(217,249,157,0.3)", color: "#65A30D" }}>
+            <div key={s.label} className="flex items-center gap-4 rounded-xl border border-border-secondary bg-surface-white p-4">
+              <div className={`p-2 rounded-lg shrink-0 ${iconToneClass.brand}`}>
                 {s.icon}
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900 leading-none">{s.value}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.sub}</p>
+                <p className="text-xl font-bold text-foreground-body leading-none">{s.value}</p>
+                <p className="text-xs text-foreground-subtle mt-0.5">{s.label}</p>
+                <p className="text-[10px] text-foreground-muted mt-0.5 leading-tight">{s.sub}</p>
               </div>
             </div>
           ))}
@@ -438,61 +448,44 @@ export default function Home() {
       <ScrollFadeUp order={3}>
       {/* ── Core Features ─────────────────────────────────── */}
       <section className="px-8 py-4 pb-12 max-w-[1200px] mx-auto">
-        <h2 className="text-[28px] font-bold tracking-[-1px] text-gray-900 mb-2">Core Features</h2>
-        <p className="text-[15px] text-gray-500 mb-8">
+        <h2 className="text-[28px] font-bold tracking-[-1px] text-foreground-body mb-2">Core Features</h2>
+        <p className="text-[15px] text-foreground-subtle mb-8">
           Everything needed to go from raw footage to precision-targeted ad placement.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <FeatureCard
-            iconBg="bg-indigo-50 text-indigo-600"
-            icon={
-              <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5" aria-hidden>
-                <circle cx="5" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M3.5 11c0-1 0.8-1.8 1.5-1.8s1.5 0.8 1.5 1.8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <circle cx="11" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M9.5 11c0-1 0.8-1.8 1.5-1.8s1.5 0.8 1.5 1.8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                <path
-                  d="M7.5 8.5h1M8 8.5V6.5M7.2 6.8l1.6-1.6M8.8 6.8L7.2 5.2"
-                  stroke="currentColor"
-                  strokeWidth="1.1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
+            tone="search"
+            icon={<ProfileIcon className="size-5" />}
             title="Real-time profile ad switching"
             description="Switch between the three custom demo personas in the player. Ranked ad recommendations and the injected preview update immediately — no reload — so you can compare how scene fit and user affinity reshape the same break in real time."
           />
           <FeatureCard
-            iconBg="bg-orange-50"
-            icon={
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src="/databricks-mark.svg" alt="" width={20} height={20} className="w-5 h-5 object-contain" />
-            }
+            tone="analyze"
+            icon={<ServersIcon className="size-5" />}
             title="Databricks contextual lift"
             description="Export Marengo-backed ad metadata and impressions-ready rows to Delta Lake via the Databricks SQL driver. Join TwelveLabs scene IDs with warehouse analytics to measure contextual lift, benchmark campaigns, and operationalize the pipeline beside your existing BI stack."
           />
           <FeatureCard
-            iconBg="bg-green-50 text-green-600"
-            icon={<svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C9.98528 0 12 2.01472 12 4.5C12 6.98528 9.98528 9 7.5 9C6.36252 8.99998 5.32451 8.57691 4.53223 7.88086L0.707031 11.707L0 11L3.85742 7.1416C3.31847 6.39969 3 5.48716 3 4.5C3 2.01474 5.01475 4.07169e-05 7.5 0ZM7.5 1C5.56704 1.00004 4 2.56703 4 4.5C4 6.43297 5.56704 7.99996 7.5 8C9.433 8 11 6.433 11 4.5C11 2.567 9.433 1 7.5 1Z" fill="currentColor" style={{ transform: "scale(0.75) translate(1.5px, 1.5px)" }} /></svg>}
+            tone="search"
+            icon={<SearchIcon className="size-5" />}
             title="Semantic Search"
             description="Search video inventory by meaning, not keywords. Describe a scene, emotion, or moment — Marengo embeddings surface the exact timestamp across all indexed content."
           />
           <FeatureCard
-            iconBg="bg-orange-50 text-orange-600"
-            icon={<svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+            tone="embed"
+            icon={<CheckmarkIcon className="size-5" />}
             title="Multiplicative Ad Scoring"
             description="Two-stage formula: scene fit (Marengo vector similarity + environment/tone) multiplied by user affinity. Scene context gates viewer preference — not the reverse."
           />
           <FeatureCard
-            iconBg="bg-yellow-50 text-yellow-600"
-            icon={<svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><circle cx="5" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.2" /><circle cx="11" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2" /><circle cx="11" cy="11" r="2.5" stroke="currentColor" strokeWidth="1.2" /><path d="M7.5 8h1M7.5 7l1-2M7.5 9l1 2" stroke="currentColor" strokeWidth="1" strokeLinecap="round" /></svg>}
+            tone="analyze"
+            icon={<SegmentIcon className="size-5" />}
             title="Cross-Break Diversity"
             description="Ensures no single ad or category dominates a broadcast. Selected ads are hard-excluded from future breaks; category caps prevent over-representation."
           />
           <FeatureCard
-            iconBg="bg-pink-50 text-pink-600"
-            icon={<svg viewBox="0 0 16 16" fill="none" className="w-5 h-5"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" strokeWidth="1.2" /><path d="M5 8h6M5 10.5h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>}
+            tone="brand"
+            icon={<VideoIcon className="size-5" />}
             title="Ad-Injected Preview"
             description="Generate a full broadcast preview with ads injected at computed break points. Ad skip logic, playback controls, and downloadable JSON plan included."
           />
@@ -505,8 +498,8 @@ export default function Home() {
       <ScrollFadeUp order={4}>
       {/* ── How It Works ──────────────────────────────────── */}
       <section className="px-8 py-4 pb-12 max-w-[1200px] mx-auto">
-        <h2 className="text-[28px] font-bold tracking-[-1px] text-gray-900 mb-2">How It Works</h2>
-        <p className="text-[15px] text-gray-500 mb-10">
+        <h2 className="text-[28px] font-bold tracking-[-1px] text-foreground-body mb-2">How It Works</h2>
+        <p className="text-[15px] text-foreground-subtle mb-10">
           Four core steps from raw footage to ranked, diverse ad placement.
         </p>
 
@@ -514,24 +507,21 @@ export default function Home() {
           {snippets.map((s) => (
             <div key={s.step}>
               <div className="flex items-center gap-3 mb-3">
-                <span
-                  className="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-gray-900 shrink-0"
-                  style={{ background: GRAD }}
-                >
+                <span className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 ${iconToneClass.brand}`}>
                   {s.step}
                 </span>
-                <h3 className="text-[18px] font-semibold text-gray-900">{s.title}</h3>
+                <h3 className="text-[18px] font-semibold text-foreground-body">{s.title}</h3>
               </div>
-              <p className="text-[15px] text-gray-500 leading-relaxed mb-4 ml-10">{s.description}</p>
+              <p className="text-[15px] text-foreground-subtle leading-relaxed mb-4 ml-10">{s.description}</p>
               {s.resourceLinks && s.resourceLinks.length > 0 ? (
-                <ul className="list-disc pl-14 pr-4 mb-6 text-[14px] text-gray-500 space-y-1.5">
+                <ul className="list-disc pl-14 pr-4 mb-6 text-[14px] text-foreground-subtle space-y-1.5">
                   {s.resourceLinks.map((link) => (
                     <li key={link.href}>
                       <a
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-gray-700 font-medium hover:text-gray-900 underline decoration-gray-300 underline-offset-2"
+                        className="font-medium text-foreground-body underline decoration-border-secondary underline-offset-2 hover:text-foreground-body"
                       >
                         {link.label}
                       </a>
@@ -551,22 +541,22 @@ export default function Home() {
       <ScrollFadeUp order={5}>
       {/* ── Why TwelveLabs ────────────────────────────────── */}
       <section className="px-8 py-4 pb-12 max-w-[1200px] mx-auto">
-        <h2 className="text-[28px] font-bold tracking-[-1px] text-gray-900 mb-2">Why TwelveLabs?</h2>
-        <p className="text-[15px] text-gray-500 mb-8">
+        <h2 className="text-[28px] font-bold tracking-[-1px] text-foreground-body mb-2">Why TwelveLabs?</h2>
+        <p className="text-[15px] text-foreground-subtle mb-8">
           TwelveLabs provides the foundational models that power every inference in this engine.
         </p>
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden">
+        <div className="rounded-2xl border border-border-secondary bg-surface-white overflow-hidden">
           {whyRows.map((row, i) => (
             <div
               key={row.name}
-              className={`flex items-start gap-4 px-6 py-5 ${i < whyRows.length - 1 ? "border-b border-[#E5E7EB]" : ""}`}
+              className={`flex items-start gap-4 px-6 py-5 ${i < whyRows.length - 1 ? "border-b border-border-secondary" : ""}`}
             >
-              <div className="p-2 rounded-xl shrink-0" style={{ background: "rgba(217,249,157,0.3)", color: "#65A30D" }}>
+              <div className={`p-2 rounded-xl shrink-0 ${iconToneClass[row.tone]}`}>
                 {row.icon}
               </div>
               <div>
-                <p className="font-semibold text-gray-900 text-[14px] mb-1">{row.name}</p>
-                <p className="text-sm text-gray-500 leading-relaxed">{row.description}</p>
+                <p className="font-semibold text-foreground-body text-[14px] mb-1">{row.name}</p>
+                <p className="text-sm text-foreground-subtle leading-relaxed">{row.description}</p>
               </div>
             </div>
           ))}
@@ -576,10 +566,10 @@ export default function Home() {
             href="https://www.twelvelabs.io/research"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-foreground-subtle hover:text-foreground-body font-medium transition-colors"
           >
             Read TwelveLabs Research Papers
-            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <ArrowBoxRightIcon className="size-3" />
           </a>
         </div>
       </section>
@@ -590,15 +580,17 @@ export default function Home() {
       <ScrollFadeUp order={6}>
       {/* ── Business Impact ───────────────────────────────── */}
       <section className="px-8 py-4 pb-12 max-w-[1200px] mx-auto">
-        <h2 className="text-[28px] font-bold tracking-[-1px] text-gray-900 mb-2">Business Impact</h2>
-        <p className="text-[15px] text-gray-500 mb-8">
+        <h2 className="text-[28px] font-bold tracking-[-1px] text-foreground-body mb-2">Business Impact</h2>
+        <p className="text-[15px] text-foreground-subtle mb-8">
           Contextual placement drives measurable outcomes for publishers, brands, and viewers.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-[#E5E7EB] p-6 bg-white">
+          <div className="rounded-2xl border border-border-secondary p-6 bg-surface-white">
             <div className="flex items-center gap-2 mb-4">
-              <svg viewBox="0 0 14 14" fill="none" className="w-4 h-4" style={{ color: "#84CC16" }}><path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-              <span className="font-semibold text-gray-900 text-sm">For Publishers</span>
+              <div className={`p-1.5 rounded-lg ${iconToneClass.embed}`}>
+                <ScalableIcon className="size-4" />
+              </div>
+              <span className="font-semibold text-foreground-body text-sm">For Publishers</span>
             </div>
             <ul className="space-y-2.5">
               {[
@@ -607,16 +599,18 @@ export default function Home() {
                 ["Viewer Retention", "Relevant ads reduce skip rates and improve completion metrics."],
               ].map(([title, desc]) => (
                 <li key={title} className="flex items-start gap-2">
-                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "#84CC16" }}><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  <span className="text-sm text-gray-500"><strong className="text-gray-900">{title}</strong> — {desc}</span>
+                  <CheckmarkIcon className="size-4 mt-0.5 shrink-0 text-foreground-embed" />
+                  <span className="text-sm text-foreground-subtle"><strong className="text-foreground-body">{title}</strong> — {desc}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-2xl border border-[#E5E7EB] p-6 bg-white">
+          <div className="rounded-2xl border border-border-secondary p-6 bg-surface-white">
             <div className="flex items-center gap-2 mb-4">
-              <svg viewBox="0 0 14 14" fill="none" className="w-4 h-4" style={{ color: "#FBBF24" }}><path d="M2 10l3-6 3 4 2-2 2 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <span className="font-semibold text-gray-900 text-sm">For Advertisers</span>
+              <div className={`p-1.5 rounded-lg ${iconToneClass.analyze}`}>
+                <AnalyzeIcon className="size-4" />
+              </div>
+              <span className="font-semibold text-foreground-body text-sm">For Advertisers</span>
             </div>
             <ul className="space-y-2.5">
               {[
@@ -625,8 +619,8 @@ export default function Home() {
                 ["Affinity-Matched Audiences", "Viewer cohort scoring ensures the right person sees the right ad."],
               ].map(([title, desc]) => (
                 <li key={title} className="flex items-start gap-2">
-                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "#FBBF24" }}><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                  <span className="text-sm text-gray-500"><strong className="text-gray-900">{title}</strong> — {desc}</span>
+                  <CheckmarkIcon className="size-4 mt-0.5 shrink-0 text-foreground-analyze" />
+                  <span className="text-sm text-foreground-subtle"><strong className="text-foreground-body">{title}</strong> — {desc}</span>
                 </li>
               ))}
             </ul>
@@ -640,30 +634,30 @@ export default function Home() {
       <ScrollFadeUp order={7}>
       {/* ── Technology Stack ──────────────────────────────── */}
       <section className="px-8 py-4 pb-12 max-w-[1200px] mx-auto">
-        <h2 className="text-[28px] font-bold tracking-[-1px] text-gray-900 mb-8">Technology Stack</h2>
-        <div className="rounded-2xl border border-[#E5E7EB] bg-white overflow-hidden">
+        <h2 className="text-[28px] font-bold tracking-[-1px] text-foreground-body mb-8">Technology Stack</h2>
+        <div className="rounded-2xl border border-border-secondary bg-surface-white overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5E7EB] bg-gray-50">
-                <th className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-gray-400">Layer</th>
-                <th className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-gray-400">Technology</th>
-                <th className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-gray-400">Purpose</th>
+              <tr className="border-b border-border-secondary bg-surface-body">
+                <th className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Layer</th>
+                <th className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Technology</th>
+                <th className="text-left px-6 py-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Purpose</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5E7EB]">
+            <tbody className="divide-y divide-border-secondary">
               {[
                 ["Frontend", "Next.js 15 + React 19", "App Router, SSR, and real-time client computation"],
                 ["Video AI", "TwelveLabs API", "Marengo embeddings + Pegasus scene analysis"],
                 ["Ad Engine", "TypeScript Pure Functions", "Deterministic scoring with useMemo for instant re-ranking"],
-                ["Styling", "Tailwind CSS v4 + Strand DS", "TwelveLabs brand design system"],
+                ["Styling", "Tailwind CSS v4 + @twelvelabs-io/react", "TwelveLabs design system"],
                 ["Storage", "Vercel Blob", "Video analysis cache + embedding cache"],
                 ["Streaming", "HLS.js + CloudFront CDN", "Adaptive bitrate playback for content + ad videos"],
                 ["Data Platform", "Databricks Delta Lake", "Ad metadata + Marengo embedding export for Mosaic AI Vector Search"],
               ].map(([layer, tech, purpose]) => (
-                <tr key={layer} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-3 font-medium text-gray-700">{layer}</td>
-                  <td className="px-6 py-3 font-mono text-xs font-medium" style={{ color: "#65A30D" }}>{tech}</td>
-                  <td className="px-6 py-3 text-gray-500 text-xs">{purpose}</td>
+                <tr key={layer} className="hover:bg-surface-body transition-colors">
+                  <td className="px-6 py-3 font-medium text-foreground-body">{layer}</td>
+                  <td className="px-6 py-3 font-tl-mono text-xs font-medium text-foreground-embed">{tech}</td>
+                  <td className="px-6 py-3 text-foreground-subtle text-xs">{purpose}</td>
                 </tr>
               ))}
             </tbody>
@@ -675,41 +669,48 @@ export default function Home() {
       <ScrollFadeUp order={8}>
       {/* ── CTA Banner ────────────────────────────────────── */}
       <section className="px-8 pb-16 max-w-[1200px] mx-auto">
-        <div className="rounded-2xl px-8 py-10 text-center" style={{ background: GRAD_WASH, border: "1px solid rgba(217,249,157,0.6)" }}>
-          <h3 className="text-[22px] font-bold tracking-tight text-gray-900 mb-2">
+        <div
+          className="rounded-2xl px-8 py-10 text-center"
+          style={{ background: CTA_GRAD_WASH, border: "1px solid rgba(217,249,157,0.6)" }}
+        >
+          <h3 className="text-[22px] font-bold tracking-tight text-foreground-body mb-2">
             Ready to see contextual ad placement in action?
           </h3>
-          <p className="text-[15px] text-gray-500 mb-6 max-w-[500px] mx-auto">
+          <p className="text-[15px] text-foreground-subtle mb-6 max-w-[500px] mx-auto">
             Upload a video, explore the ad inventory, and watch the engine rank ads in real time as you switch viewer profiles.
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <a
-              href="https://docs.twelvelabs.io/docs/introduction"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-gray-900 transition-all hover:brightness-95"
-              style={{ background: GRAD }}
-            >
-              API Documentation
-            </a>
-            <a
-              href="https://www.twelvelabs.io/research"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white font-semibold text-sm hover:bg-black hover:rounded-2xl transition-all duration-200"
-            >
-              Research Papers
-              <svg viewBox="0 0 10 10" fill="none" className="w-3 h-3 opacity-60"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </a>
-            <a
-              href="https://www.twelvelabs.io/contact"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-[#E5E7EB] text-gray-500 font-semibold text-sm hover:border-gray-400 hover:text-gray-900 transition-colors"
-            >
-              Talk to Sales
-              <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </a>
+            <Button asChild variant="primary" size="regular">
+              <a
+                href="https://docs.twelvelabs.io/docs/introduction"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ApiDocIcon className="size-4" />
+                API Documentation
+              </a>
+            </Button>
+            <Button asChild variant="secondary" size="regular">
+              <a
+                href="https://www.twelvelabs.io/research"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Research Papers
+                <ArrowBoxRightIcon className="size-3 opacity-60" />
+              </a>
+            </Button>
+            <Button asChild variant="outlined-gray" size="regular">
+              <a
+                href="https://www.twelvelabs.io/contact"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ContactSalesIcon className="size-4" />
+                Talk to Sales
+                <ArrowBoxRightIcon className="size-3" />
+              </a>
+            </Button>
           </div>
         </div>
       </section>
@@ -717,14 +718,14 @@ export default function Home() {
 
       <ScrollFadeUp order={9}>
       {/* ── Footer ────────────────────────────────────────── */}
-      <footer className="border-t border-[#E5E7EB] px-8 py-6 text-center">
-        <p className="text-[12px] text-gray-400">
+      <footer className="border-t border-border-secondary px-8 py-6 text-center">
+        <p className="text-[12px] text-foreground-muted">
           Built by Nathan Che &nbsp;•&nbsp; Powered by{" "}
           <a
             href="https://www.twelvelabs.io"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-500 hover:text-gray-900 transition-colors font-medium"
+            className="text-foreground-subtle hover:text-foreground-body transition-colors font-medium"
           >
             TwelveLabs
           </a>

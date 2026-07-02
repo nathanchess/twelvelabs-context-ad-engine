@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Button } from "@twelvelabs-io/react";
 import { upload } from '@vercel/blob/client';
 import { invalidateVideoCache } from "../lib/videoCache";
 
@@ -138,11 +139,11 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
     return (
         <div className={`rounded-xl border p-4 space-y-3 transition-all duration-300 ${isDone ? "border-green-200 bg-green-50/50" :
             isError ? "border-red-200 bg-red-50/50" :
-                "border-border-light bg-gray-50/50"
+                "border-border-secondary bg-gray-50/50"
             }`}>
             {/* Status row */}
             <div className="flex items-center gap-3">
-                {!isDone && !isError && <Spinner className="w-4 h-4 text-text-secondary" />}
+                {!isDone && !isError && <Spinner className="w-4 h-4 text-foreground-subtle" />}
                 {isDone && (
                     <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 text-green-600">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
@@ -156,14 +157,14 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
                     </svg>
                 )}
                 <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-medium truncate ${isDone ? "text-green-700" : isError ? "text-red-600" : "text-text-primary"}`}>
+                    <p className={`text-xs font-medium truncate ${isDone ? "text-green-700" : isError ? "text-red-600" : "text-foreground-body"}`}>
                         {progress.message}
                     </p>
                     {progress.currentFile && !isDone && (
-                        <p className="text-[10px] text-text-tertiary truncate mt-0.5">{progress.currentFile}</p>
+                        <p className="text-[10px] text-foreground-muted truncate mt-0.5">{progress.currentFile}</p>
                     )}
                 </div>
-                <span className="text-[11px] font-medium text-text-secondary tabular-nums shrink-0">
+                <span className="text-[11px] font-medium text-foreground-subtle tabular-nums shrink-0">
                     {Math.round(progress.percent)}%
                 </span>
             </div>
@@ -181,11 +182,11 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
 
             {/* Phase breakdown */}
             {(progress.phase === "blob" || progress.phase === "twelvelabs") && (
-                <div className="flex items-center gap-4 text-[10px] text-text-tertiary">
-                    <span className={progress.phase === "blob" ? "text-text-secondary font-medium" : ""}>
+                <div className="flex items-center gap-4 text-[10px] text-foreground-muted">
+                    <span className={progress.phase === "blob" ? "text-foreground-subtle font-medium" : ""}>
                         Vercel Blob: {progress.blobCompleted}/{progress.blobTotal}
                     </span>
-                    <span className={progress.phase === "twelvelabs" ? "text-text-secondary font-medium" : ""}>
+                    <span className={progress.phase === "twelvelabs" ? "text-foreground-subtle font-medium" : ""}>
                         TwelveLabs: {progress.tlCompleted}/{progress.tlTotal}
                     </span>
                 </div>
@@ -494,14 +495,14 @@ export default function VideoInventoryUploadModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-border-light shrink-0">
-                    <h2 className="text-lg font-semibold text-text-primary">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border-secondary shrink-0">
+                    <h2 className="text-lg font-semibold text-foreground-body">
                         Upload Inventory Videos
                     </h2>
                     {!uploading && (
                         <button
                             onClick={handleReset}
-                            className="p-1.5 rounded-md text-text-tertiary hover:text-text-primary hover:bg-gray-50 transition-colors duration-200"
+                            className="p-1.5 rounded-md text-foreground-muted hover:text-foreground-body hover:bg-gray-50 transition-colors duration-200"
                             aria-label="Close modal"
                         >
                             <svg viewBox="0 0 12 12" fill="none" className="w-4 h-4">
@@ -514,9 +515,9 @@ export default function VideoInventoryUploadModal({
                 {/* Scrollable Content */}
                 <div className="px-6 py-6 space-y-6 overflow-y-auto flex-1">
                     {/* Information Note */}
-                    <div className="bg-mb-pink-light/30 border border-mb-pink-light rounded-xl p-4 flex gap-3">
+                    <div className="bg-tl-master-brand-light-pink/30 border border-tl-master-brand-light-pink rounded-xl p-4 flex gap-3">
                         <div className="shrink-0 mt-0.5">
-                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-mb-pink-dark">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-tl-master-brand-dark-pink">
                                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                 <path d="M12 16V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                 <path d="M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -535,14 +536,14 @@ export default function VideoInventoryUploadModal({
 
                     {/* Custom Video Tags */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">Internal Organization Tags</label>
+                        <label className="block text-sm font-medium text-foreground-body mb-2">Internal Organization Tags</label>
                         {tags.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-2">
                                 {tags.map((tag) => (
-                                    <span key={tag} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-[11px] font-medium text-text-secondary ${uploading ? "opacity-60" : ""}`}>
+                                    <span key={tag} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-[11px] font-medium text-foreground-subtle ${uploading ? "opacity-60" : ""}`}>
                                         {tag}
                                         {!uploading && (
-                                            <button onClick={() => setTags(tags.filter((t) => t !== tag))} className="hover:text-text-primary transition-colors">
+                                            <button onClick={() => setTags(tags.filter((t) => t !== tag))} className="hover:text-foreground-body transition-colors">
                                                 <svg viewBox="0 0 8 8" fill="none" className="w-2.5 h-2.5"><path d="M6 2L2 6M2 2L6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
                                             </button>
                                         )}
@@ -557,17 +558,17 @@ export default function VideoInventoryUploadModal({
                                 onChange={(e) => setTagInput(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTagAdd(tagInput); } }}
                                 placeholder="e.g. Technology, Lifestyle, Organic Content..."
-                                className="w-full px-4 py-2.5 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-default transition-colors"
+                                className="w-full px-4 py-2.5 rounded-lg border border-border-secondary bg-white text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none focus:border-border-primary transition-colors"
                             />
                         )}
                     </div>
 
                     {/* Video Upload */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">
+                        <label className="block text-sm font-medium text-foreground-body mb-2">
                             Select Videos
                             {videoFiles.length > 0 && (
-                                <span className="text-text-tertiary font-normal ml-1">({videoFiles.length})</span>
+                                <span className="text-foreground-muted font-normal ml-1">({videoFiles.length})</span>
                             )}
                         </label>
 
@@ -582,7 +583,7 @@ export default function VideoInventoryUploadModal({
                   transition-all duration-200
                   ${dragOver
                                         ? "border-gray-700 bg-gray-50"
-                                        : "border-border-light hover:border-border-default hover:bg-gray-50/50"
+                                        : "border-border-secondary hover:border-border-primary hover:bg-gray-50/50"
                                     }
                 `}
                             >
@@ -595,14 +596,14 @@ export default function VideoInventoryUploadModal({
                                     className="hidden"
                                 />
                                 <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-gray-50 flex items-center justify-center">
-                                    <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5 text-text-tertiary">
+                                    <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5 text-foreground-muted">
                                         <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                     </svg>
                                 </div>
-                                <p className="text-sm text-text-secondary mb-0.5">
-                                    Drop video files here, or <span className="text-text-primary font-medium">browse</span>
+                                <p className="text-sm text-foreground-subtle mb-0.5">
+                                    Drop video files here, or <span className="text-foreground-body font-medium">browse</span>
                                 </p>
-                                <p className="text-xs text-text-tertiary">
+                                <p className="text-xs text-foreground-muted">
                                     Supports MP4, MOV, AVI, MKV, WebM
                                 </p>
                             </div>
@@ -624,38 +625,33 @@ export default function VideoInventoryUploadModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light shrink-0 bg-gray-50 rounded-b-2xl">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-secondary shrink-0 bg-gray-50 rounded-b-2xl">
                     {!uploading ? (
                         <>
-                            <button
+                            <Button
+                                type="button"
+                                variant="outlined-gray"
+                                size="regular"
                                 onClick={handleReset}
-                                className="px-4 py-2 rounded-full border border-border-default text-sm font-medium text-text-primary hover:bg-white transition-all duration-200"
                             >
                                 Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="primary"
+                                size="regular"
                                 onClick={handleUpload}
                                 disabled={!isValid}
-                                className={`
-                  px-5 py-2 rounded-full text-sm font-medium transition-all duration-200
-                  ${isValid
-                                        ? "bg-gray-900 text-white hover:bg-black shadow-sm"
-                                        : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                    }
-                `}
                             >
                                 Upload & Analyze
-                            </button>
+                            </Button>
                         </>
                     ) : uploadProgress.phase === "done" || uploadProgress.phase === "error" ? (
-                        <button
-                            onClick={handleReset}
-                            className="px-5 py-2 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-black transition-all duration-200"
-                        >
+                        <Button type="button" variant="primary" size="regular" onClick={handleReset}>
                             Done
-                        </button>
+                        </Button>
                     ) : (
-                        <p className="text-xs text-text-tertiary animate-pulse">
+                        <p className="text-xs text-foreground-muted animate-pulse">
                             Processing with TwelveLabs…
                         </p>
                     )}

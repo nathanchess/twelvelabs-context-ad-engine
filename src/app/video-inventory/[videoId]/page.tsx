@@ -53,8 +53,8 @@ function ScoreBar({ value, max = 1, label, className = "" }: { value: number; ma
   return (
     <div className={className}>
       {label && <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] text-text-tertiary">{label}</span>
-        <span className="text-[10px] font-semibold text-text-primary tabular-nums">{value.toFixed(2)}</span>
+        <span className="text-[10px] text-foreground-muted">{label}</span>
+        <span className="text-[10px] font-semibold text-foreground-body tabular-nums">{value.toFixed(2)}</span>
       </div>}
       <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden ring-1 ring-inset ring-black/5">
         <div className="h-full bg-gray-800 rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
@@ -152,14 +152,14 @@ function AdPreviewModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-      <div className="relative w-full max-w-4xl rounded-2xl border border-border-light bg-white shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border-light">
+      <div className="relative w-full max-w-4xl rounded-2xl border border-border-secondary bg-white shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border-secondary">
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[1.5px] text-text-tertiary font-semibold">Ad Preview</p>
-            <p className="text-sm font-semibold text-text-primary truncate">{ad.ad.proposedTitle || ad.ad.brand}</p>
-            <p className="text-[11px] text-text-tertiary truncate">Company: {ad.ad.brand}</p>
+            <p className="text-[10px] uppercase tracking-[1.5px] text-foreground-muted font-semibold">Ad Preview</p>
+            <p className="text-sm font-semibold text-foreground-body truncate">{ad.ad.proposedTitle || ad.ad.brand}</p>
+            <p className="text-[11px] text-foreground-muted truncate">Company: {ad.ad.brand}</p>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors">
             <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
         </div>
@@ -174,7 +174,7 @@ function AdPreviewModal({
             preload="metadata"
           />
         </div>
-        <div className="px-5 py-3 border-t border-border-light bg-white">
+        <div className="px-5 py-3 border-t border-border-secondary bg-white">
           <div className="flex items-center gap-2">
             <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-gray-700 transition-colors">
               {isPlaying ? (
@@ -183,7 +183,7 @@ function AdPreviewModal({
                 <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M4 2.8v6.4c0 .5.5.8.9.5l4.6-3.2c.4-.3.4-.8 0-1.1L4.9 2.2A.6.6 0 004 2.8z" fill="currentColor" /></svg>
               )}
             </button>
-            <span className="text-[11px] tabular-nums text-text-tertiary w-20">{fmt(time)} / {fmt(duration || 0)}</span>
+            <span className="text-[11px] tabular-nums text-foreground-muted w-20">{fmt(time)} / {fmt(duration || 0)}</span>
             <input type="range" min={0} max={duration || 0} step={0.1} value={time} onChange={(e) => seek(parseFloat(e.target.value))} className="flex-1 h-1 accent-gray-900" />
             <select
               value={rate}
@@ -192,7 +192,7 @@ function AdPreviewModal({
                 setRate(next);
                 if (modalVideoRef.current) modalVideoRef.current.playbackRate = next;
               }}
-              className="text-[11px] border border-border-light rounded px-2 py-1 bg-white text-text-secondary"
+              className="text-[11px] border border-border-secondary rounded px-2 py-1 bg-white text-foreground-subtle"
             >
               {[0.5, 0.75, 1, 1.25, 1.5, 2].map((r) => (
                 <option key={r} value={r}>{r}x</option>
@@ -204,7 +204,7 @@ function AdPreviewModal({
                 setIsMuted(nextMuted);
                 if (modalVideoRef.current) modalVideoRef.current.muted = nextMuted;
               }}
-              className="text-[11px] border border-border-light rounded px-2 py-1 bg-white text-text-secondary hover:bg-gray-50"
+              className="text-[11px] border border-border-secondary rounded px-2 py-1 bg-white text-foreground-subtle hover:bg-gray-50"
             >
               {isMuted ? "Unmute" : "Mute"}
             </button>
@@ -243,16 +243,16 @@ function ViewerProfileModal({ user, onClose }: { user: MockUser; onClose: () => 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-border-light w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light shrink-0">
+      <div className="relative bg-white rounded-2xl shadow-2xl border border-border-secondary w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-secondary shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[12px] font-bold text-text-secondary">{user.name.charAt(0)}</div>
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[12px] font-bold text-foreground-subtle">{user.name.charAt(0)}</div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[1.5px] text-text-tertiary">Viewer profile</p>
-              <p className="text-sm font-semibold text-text-primary mt-0.5">{user.name}</p>
+              <p className="text-xs font-semibold uppercase tracking-[1.5px] text-foreground-muted">Viewer profile</p>
+              <p className="text-sm font-semibold text-foreground-body mt-0.5">{user.name}</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors">
             <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
         </div>
@@ -265,8 +265,8 @@ function ViewerProfileModal({ user, onClose }: { user: MockUser; onClose: () => 
               { label: "DMA", value: user.dma_region },
             ].map(({ label, value }) => (
               <div key={label} className="px-3 py-2.5 rounded-lg bg-gray-50">
-                <p className="text-[10px] text-text-tertiary mb-0.5 uppercase tracking-wider">{label}</p>
-                <p className="text-sm font-medium text-text-primary capitalize">{value}</p>
+                <p className="text-[10px] text-foreground-muted mb-0.5 uppercase tracking-wider">{label}</p>
+                <p className="text-sm font-medium text-foreground-body capitalize">{value}</p>
               </div>
             ))}
           </div>
@@ -277,10 +277,10 @@ function ViewerProfileModal({ user, onClose }: { user: MockUser; onClose: () => 
             { title: "Exclusion categories", items: user.exclusion_categories },
           ].map(({ title, items }) => (
             <div key={title}>
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-2">{title}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-2">{title}</p>
               <div className="flex flex-wrap gap-1.5">
                 {(items.length ? items : ["---"]).map((d) => (
-                  <span key={d} className="px-2 py-1 rounded-full bg-gray-50 border border-border-light text-[11px] text-text-secondary">{d}</span>
+                  <span key={d} className="px-2 py-1 rounded-full bg-gray-50 border border-border-secondary text-[11px] text-foreground-subtle">{d}</span>
                 ))}
               </div>
             </div>
@@ -308,13 +308,13 @@ function SceneDetailModal({ segment, index, onClose, onSeek }: { segment: Segmen
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
-      <div className="relative bg-white rounded-2xl shadow-2xl border border-border-light w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light shrink-0">
+      <div className="relative bg-white rounded-2xl shadow-2xl border border-border-secondary w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-secondary shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[11px] font-bold shrink-0">{index + 1}</div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[1.5px] text-text-tertiary">Scene {index + 1}</p>
-              <p className="text-sm font-medium text-text-primary leading-tight mt-0.5 truncate">{segment.scene_context}</p>
+              <p className="text-xs font-semibold uppercase tracking-[1.5px] text-foreground-muted">Scene {index + 1}</p>
+              <p className="text-sm font-medium text-foreground-body leading-tight mt-0.5 truncate">{segment.scene_context}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -322,7 +322,7 @@ function SceneDetailModal({ segment, index, onClose, onSeek }: { segment: Segmen
               <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               {fmt(segment.start_time)}
             </button>
-            <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors">
+            <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors">
               <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
             </button>
           </div>
@@ -331,41 +331,41 @@ function SceneDetailModal({ segment, index, onClose, onSeek }: { segment: Segmen
           <div className="grid grid-cols-3 gap-3">
             {[{ label: "Start", value: fmt(segment.start_time) }, { label: "End", value: fmt(segment.end_time) }, { label: "Environment", value: segment.environment?.replace(/_/g, " ") }].map(({ label, value }) => (
               <div key={label} className="px-3 py-2.5 rounded-lg bg-gray-50">
-                <p className="text-[10px] text-text-tertiary mb-0.5 uppercase tracking-wider">{label}</p>
-                <p className="text-sm font-semibold text-text-primary tabular-nums capitalize">{value}</p>
+                <p className="text-[10px] text-foreground-muted mb-0.5 uppercase tracking-wider">{label}</p>
+                <p className="text-sm font-semibold text-foreground-body tabular-nums capitalize">{value}</p>
               </div>
             ))}
           </div>
           {segment.cast_present && segment.cast_present.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-2">Cast in Scene</p>
-              <div className="flex flex-wrap gap-1.5">{segment.cast_present.map((name) => (<span key={name} className="px-2.5 py-1 rounded-full bg-gray-50 border border-border-light text-[11px] font-medium text-text-primary">{name}</span>))}</div>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-2">Cast in Scene</p>
+              <div className="flex flex-wrap gap-1.5">{segment.cast_present.map((name) => (<span key={name} className="px-2.5 py-1 rounded-full bg-gray-50 border border-border-secondary text-[11px] font-medium text-foreground-body">{name}</span>))}</div>
             </div>
           )}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-2">Emotional Profile</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-2">Emotional Profile</p>
             <div className="flex flex-wrap gap-2 mb-2">
-              <span className="px-2.5 py-1 rounded-full bg-gray-50 border border-border-light text-[11px] font-medium text-text-secondary capitalize">Sentiment: {segment.sentiment}</span>
-              <span className="px-2.5 py-1 rounded-full bg-gray-50 border border-border-light text-[11px] font-medium text-text-secondary capitalize">Tone: {segment.tone}</span>
+              <span className="px-2.5 py-1 rounded-full bg-gray-50 border border-border-secondary text-[11px] font-medium text-foreground-subtle capitalize">Sentiment: {segment.sentiment}</span>
+              <span className="px-2.5 py-1 rounded-full bg-gray-50 border border-border-secondary text-[11px] font-medium text-foreground-subtle capitalize">Tone: {segment.tone}</span>
             </div>
-            <div className="flex items-center gap-3 text-[11px] text-text-tertiary">
+            <div className="flex items-center gap-3 text-[11px] text-foreground-muted">
               <span>Emotional Intensity</span>
               <IntensityBar value={segment.emotional_intensity} />
-              <span className="tabular-nums text-text-primary font-medium">{Math.round(segment.emotional_intensity * 100)}%</span>
+              <span className="tabular-nums text-foreground-body font-medium">{Math.round(segment.emotional_intensity * 100)}%</span>
             </div>
           </div>
           {segment.brand_safety && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-2">Brand Safety (GARM)</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-2">Brand Safety (GARM)</p>
               <div className="flex items-center gap-2 mb-2">
                 <span className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold ${segment.brand_safety.is_safe ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"}`}>{segment.brand_safety.is_safe ? "Safe" : "Flagged"}</span>
-                <span className={`px-2.5 py-1 rounded-full border text-[11px] font-medium ${riskColors[rl] || "text-text-secondary bg-gray-50 border-border-light"}`}>Risk: {segment.brand_safety.risk_level}</span>
+                <span className={`px-2.5 py-1 rounded-full border text-[11px] font-medium ${riskColors[rl] || "text-foreground-subtle bg-gray-50 border-border-secondary"}`}>Risk: {segment.brand_safety.risk_level}</span>
               </div>
               {segment.brand_safety.garm_flags.length > 0 ? (
                 <div className="space-y-1.5">{segment.brand_safety.garm_flags.map((flag, i) => (
                   <div key={i} className="flex items-start gap-2 text-[11px]">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium shrink-0 ${severityColors[flag.severity.toLowerCase()] || "bg-gray-100 text-text-secondary"}`}>{flag.severity.replace(/_/g, " ")}</span>
-                    <span className="text-text-secondary"><span className="font-medium text-text-primary">{flag.category}:</span> {flag.evidence}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium shrink-0 ${severityColors[flag.severity.toLowerCase()] || "bg-gray-100 text-foreground-subtle"}`}>{flag.severity.replace(/_/g, " ")}</span>
+                    <span className="text-foreground-subtle"><span className="font-medium text-foreground-body">{flag.category}:</span> {flag.evidence}</span>
                   </div>
                 ))}</div>
               ) : (
@@ -378,44 +378,44 @@ function SceneDetailModal({ segment, index, onClose, onSeek }: { segment: Segmen
           )}
           {segment.ad_suitability && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-2">Ad Suitability</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-2">Ad Suitability</p>
               {segment.ad_suitability.confidence !== undefined && (
-                <div className="flex items-center gap-3 text-[11px] text-text-tertiary mb-2">
+                <div className="flex items-center gap-3 text-[11px] text-foreground-muted mb-2">
                   <span>Confidence</span>
-                  <IntensityBar value={segment.ad_suitability.confidence} color="bg-mb-green-dark" />
-                  <span className="tabular-nums text-text-primary font-medium">{Math.round(segment.ad_suitability.confidence * 100)}%</span>
+                  <IntensityBar value={segment.ad_suitability.confidence} color="bg-tl-master-brand-dark-green" />
+                  <span className="tabular-nums text-foreground-body font-medium">{Math.round(segment.ad_suitability.confidence * 100)}%</span>
                 </div>
               )}
               {segment.ad_suitability.suitable_categories.length > 0 && (
                 <div className="mb-2">
-                  <p className="text-[10px] text-text-tertiary mb-1.5">Suitable</p>
-                  <div className="flex flex-wrap gap-1.5">{segment.ad_suitability.suitable_categories.map((cat) => (<span key={cat} className="px-2 py-0.5 rounded-full bg-mb-green-light/20 border border-mb-green-light/50 text-[11px] text-mb-green-dark font-medium">{cat}</span>))}</div>
+                  <p className="text-[10px] text-foreground-muted mb-1.5">Suitable</p>
+                  <div className="flex flex-wrap gap-1.5">{segment.ad_suitability.suitable_categories.map((cat) => (<span key={cat} className="px-2 py-0.5 rounded-full bg-tl-master-brand-light-green/20 border border-tl-master-brand-light-green/50 text-[11px] text-tl-master-brand-dark-green font-medium">{cat}</span>))}</div>
                 </div>
               )}
               {segment.ad_suitability.contextual_themes.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-text-tertiary mb-1.5">Contextual Themes</p>
-                  <div className="flex flex-wrap gap-1.5">{segment.ad_suitability.contextual_themes.map((theme) => (<span key={theme} className="px-2 py-0.5 rounded-full bg-gray-50 border border-border-light text-[11px] text-text-secondary">{theme}</span>))}</div>
+                  <p className="text-[10px] text-foreground-muted mb-1.5">Contextual Themes</p>
+                  <div className="flex flex-wrap gap-1.5">{segment.ad_suitability.contextual_themes.map((theme) => (<span key={theme} className="px-2 py-0.5 rounded-full bg-gray-50 border border-border-secondary text-[11px] text-foreground-subtle">{theme}</span>))}</div>
                 </div>
               )}
             </div>
           )}
           {segment.ad_break_fitness && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-2">Ad Break Fitness</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-2">Ad Break Fitness</p>
               <div className="flex flex-wrap gap-2 mb-2">
-                <span className={`px-2.5 py-1 rounded-full border text-[11px] font-medium ${breakQualityColors[bq] || "text-text-secondary bg-gray-50 border-border-light"}`}>Quality: {segment.ad_break_fitness.post_segment_break_quality}</span>
-                <span className="px-2.5 py-1 rounded-full border border-border-light bg-gray-50 text-[11px] text-text-secondary capitalize">{segment.ad_break_fitness.break_type.replace(/_/g, " ")}</span>
+                <span className={`px-2.5 py-1 rounded-full border text-[11px] font-medium ${breakQualityColors[bq] || "text-foreground-subtle bg-gray-50 border-border-secondary"}`}>Quality: {segment.ad_break_fitness.post_segment_break_quality}</span>
+                <span className="px-2.5 py-1 rounded-full border border-border-secondary bg-gray-50 text-[11px] text-foreground-subtle capitalize">{segment.ad_break_fitness.break_type.replace(/_/g, " ")}</span>
               </div>
-              <div className="flex items-center gap-3 text-[11px] text-text-tertiary mb-3">
+              <div className="flex items-center gap-3 text-[11px] text-foreground-muted mb-3">
                 <span>Interruption Risk</span>
                 <IntensityBar value={segment.ad_break_fitness.interruption_risk} color="bg-amber-500" />
-                <span className="tabular-nums text-text-primary font-medium">{Math.round(segment.ad_break_fitness.interruption_risk * 100)}%</span>
+                <span className="tabular-nums text-foreground-body font-medium">{Math.round(segment.ad_break_fitness.interruption_risk * 100)}%</span>
               </div>
               {segment.ad_break_fitness.reasoning && (
-                <div className="rounded-lg bg-gray-50 border border-border-light px-3 py-2.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-1">Break Reasoning</p>
-                  <p className="text-[12px] text-text-secondary leading-relaxed">{segment.ad_break_fitness.reasoning}</p>
+                <div className="rounded-lg bg-gray-50 border border-border-secondary px-3 py-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-1">Break Reasoning</p>
+                  <p className="text-[12px] text-foreground-subtle leading-relaxed">{segment.ad_break_fitness.reasoning}</p>
                 </div>
               )}
             </div>
@@ -462,23 +462,23 @@ function SafetyModeInfoModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
       <div
-        className="relative bg-white rounded-2xl shadow-2xl border border-border-light w-full max-w-lg overflow-hidden"
+        className="relative bg-white rounded-2xl shadow-2xl border border-border-secondary w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-secondary">
           <div>
-            <p className="text-[10px] uppercase tracking-[1.5px] text-text-tertiary font-semibold">Config</p>
-            <p className="text-sm font-semibold text-text-primary mt-0.5">Safety Mode</p>
+            <p className="text-[10px] uppercase tracking-[1.5px] text-foreground-muted font-semibold">Config</p>
+            <p className="text-sm font-semibold text-foreground-body mt-0.5">Safety Mode</p>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors"
           >
             <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
         </div>
         <div className="px-5 py-4 space-y-3">
-          <p className="text-[12px] text-text-secondary leading-relaxed">
+          <p className="text-[12px] text-foreground-subtle leading-relaxed">
             Modes always adjust scoring using interruption risk, sentiment, and tone (so you see a difference even when every scene is GARM-safe). GARM fields still zero or down-rank breaks when the model flags real risk.
           </p>
           {modes.map((m) => (
@@ -893,40 +893,40 @@ export default function VideoInventoryDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-border-light px-8 py-5">
+      <header className="border-b border-border-secondary px-8 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-1.5 text-sm text-text-tertiary mb-2">
-              <Link href="/video-inventory" className="hover:text-text-primary transition-colors inline-flex items-center gap-1">
+            <div className="flex items-center gap-1.5 text-sm text-foreground-muted mb-2">
+              <Link href="/video-inventory" className="hover:text-foreground-body transition-colors inline-flex items-center gap-1">
                 <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M8 2L4 6L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 Video Inventory
               </Link>
             </div>
-            <h1 className="text-[26px] font-bold tracking-[-0.8px] text-text-primary">{analysisTitle}</h1>
-            <p className="text-sm text-text-tertiary mt-1">{displayName}</p>
+            <h1 className="text-[26px] font-bold tracking-[-0.8px] text-foreground-body">{analysisTitle}</h1>
+            <p className="text-sm text-foreground-muted mt-1">{displayName}</p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             {/* Profile selector */}
             <div className="relative">
-              <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border-light bg-white text-sm text-text-primary hover:bg-gray-50 transition-colors">
-                <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-text-secondary">{selectedUser.name.charAt(0)}</div>
+              <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border-secondary bg-white text-sm text-foreground-body hover:bg-gray-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-foreground-subtle">{selectedUser.name.charAt(0)}</div>
                 <span className="font-medium">{selectedUser.name}</span>
-                <svg viewBox="0 0 10 6" fill="none" className="w-2.5 h-2.5 text-text-tertiary"><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg viewBox="0 0 10 6" fill="none" className="w-2.5 h-2.5 text-foreground-muted"><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               {showProfileMenu && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setShowProfileMenu(false)} />
-                  <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-border-light py-1.5 z-40 overflow-hidden">
-                    <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Viewer profile (demo)</p>
+                  <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-border-secondary py-1.5 z-40 overflow-hidden">
+                    <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Viewer profile (demo)</p>
                     {MOCK_USERS.map((user) => (
-                      <div key={user.id} className={`relative w-full px-3 py-2 flex items-center gap-2.5 text-[12px] transition-colors cursor-pointer select-none ${selectedUserId === user.id ? "bg-gray-50 text-text-primary font-medium" : "text-text-secondary hover:bg-gray-50"}`} onClick={() => { setSelectedUserId(user.id); setShowProfileMenu(false); }} role="option" aria-selected={selectedUserId === user.id}>
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${selectedUserId === user.id ? "bg-gray-900 text-white" : "bg-gray-100 text-text-secondary"}`}>{user.name.charAt(0)}</div>
+                      <div key={user.id} className={`relative w-full px-3 py-2 flex items-center gap-2.5 text-[12px] transition-colors cursor-pointer select-none ${selectedUserId === user.id ? "bg-gray-50 text-foreground-body font-medium" : "text-foreground-subtle hover:bg-gray-50"}`} onClick={() => { setSelectedUserId(user.id); setShowProfileMenu(false); }} role="option" aria-selected={selectedUserId === user.id}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${selectedUserId === user.id ? "bg-gray-900 text-white" : "bg-gray-100 text-foreground-subtle"}`}>{user.name.charAt(0)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="truncate">{user.name}</div>
-                          <div className="text-[10px] text-text-tertiary truncate">{user.demographics.slice(0, 2).join(", ") || "No demographics"}</div>
+                          <div className="text-[10px] text-foreground-muted truncate">{user.demographics.slice(0, 2).join(", ") || "No demographics"}</div>
                         </div>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setShowProfileMenu(false); setProfileDetailsUserId(user.id); }} className="w-7 h-7 rounded-full flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors shrink-0" title="View profile details">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setShowProfileMenu(false); setProfileDetailsUserId(user.id); }} className="w-7 h-7 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors shrink-0" title="View profile details">
                           <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M6 8V6M6 4h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" /></svg>
                         </button>
                       </div>
@@ -937,7 +937,7 @@ export default function VideoInventoryDetailPage() {
             </div>
 
             {/* Config toggle */}
-            <button onClick={() => setShowConfigPanel(!showConfigPanel)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${showConfigPanel ? "border-gray-900 bg-gray-900 text-white" : "border-border-light bg-white text-text-primary hover:bg-gray-50"}`}>
+            <button onClick={() => setShowConfigPanel(!showConfigPanel)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${showConfigPanel ? "border-gray-900 bg-gray-900 text-white" : "border-border-secondary bg-white text-foreground-body hover:bg-gray-50"}`}>
               <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4"><path d="M6.5 1.5h3v3l2.1 1.2 2.1-2.1 2.1 2.1-2.1 2.1L15 9.5v3h-3l-1.2 2.1 2.1 2.1-2.1 2.1-2.1-2.1L7.5 18h-3l-1.2-2.1L1.2 18l-2.1-2.1 2.1-2.1L0 12.5v-3h3l1.2-2.1L2.1 5.3l2.1-2.1 2.1 2.1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" transform="translate(1,0) scale(0.85)" /><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.2" /></svg>
               Config
             </button>
@@ -954,58 +954,58 @@ export default function VideoInventoryDetailPage() {
 
       <main className="px-8 py-6 space-y-8">
         {loading && !video ? (
-          <div className="h-[320px] rounded-2xl bg-gray-50 border border-border-light animate-pulse" />
+          <div className="h-[320px] rounded-2xl bg-gray-50 border border-border-secondary animate-pulse" />
         ) : !video ? (
-          <div className="text-sm text-text-secondary">Video not found in this inventory.</div>
+          <div className="text-sm text-foreground-subtle">Video not found in this inventory.</div>
         ) : (
           <>
             {/* ── Placement Config Panel ── */}
             {showConfigPanel && (
-              <div className="rounded-xl border border-border-light bg-gray-50/60 p-4">
+              <div className="rounded-xl border border-border-secondary bg-gray-50/60 p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Placement Configuration</h3>
-                  <button onClick={() => setShowConfigPanel(false)} className="text-text-tertiary hover:text-text-primary transition-colors">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Placement Configuration</h3>
+                  <button onClick={() => setShowConfigPanel(false)} className="text-foreground-muted hover:text-foreground-body transition-colors">
                     <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
                   </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-text-tertiary">Safety Mode</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Safety Mode</label>
                       <button
                         type="button"
                         onClick={() => setShowSafetyInfo(true)}
-                        className="w-4 h-4 rounded-full flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors shrink-0"
+                        className="w-4 h-4 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors shrink-0"
                         title="Learn about safety modes"
                       >
                         <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M6 8V6M6 4h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" /></svg>
                       </button>
                     </div>
-                    <div className="flex rounded-lg border border-border-light overflow-hidden">
+                    <div className="flex rounded-lg border border-border-secondary overflow-hidden">
                       {(["strict", "balanced", "revenue_max"] as const).map((mode) => (
-                        <button key={mode} onClick={() => setPlacementConfig((c) => ({ ...c, safetyMode: mode }))} className={`flex-1 py-1.5 text-[10px] font-semibold capitalize transition-colors ${placementConfig.safetyMode === mode ? "bg-gray-900 text-white" : "bg-white text-text-secondary hover:bg-gray-50"}`}>
+                        <button key={mode} onClick={() => setPlacementConfig((c) => ({ ...c, safetyMode: mode }))} className={`flex-1 py-1.5 text-[10px] font-semibold capitalize transition-colors ${placementConfig.safetyMode === mode ? "bg-gray-900 text-white" : "bg-white text-foreground-subtle hover:bg-gray-50"}`}>
                           {mode.replace(/_/g, " ")}
                         </button>
                       ))}
                     </div>
-                    <p className="text-[10px] text-text-tertiary mt-1.5 leading-snug">
+                    <p className="text-[10px] text-foreground-muted mt-1.5 leading-snug">
                       Affects break ranking and ad scores from interruption, sentiment, and tone (see info).
                     </p>
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-text-tertiary block mb-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted block mb-1.5">
                       Max Breaks: {placementConfig.maxBreaks}
                     </label>
                     <input type="range" min="1" max="8" value={placementConfig.maxBreaks} onChange={(e) => setPlacementConfig((c) => ({ ...c, maxBreaks: parseInt(e.target.value) }))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-800" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-text-tertiary block mb-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted block mb-1.5">
                       Min Spacing: {placementConfig.minSpacingSeconds}s
                     </label>
                     <input type="range" min="30" max="600" step="30" value={placementConfig.minSpacingSeconds} onChange={(e) => setPlacementConfig((c) => ({ ...c, minSpacingSeconds: parseInt(e.target.value) }))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-800" />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-text-tertiary block mb-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted block mb-1.5">
                       Min Segment: {placementConfig.minSegmentDuration}s
                     </label>
                     <input type="range" min="10" max="120" step="5" value={placementConfig.minSegmentDuration} onChange={(e) => setPlacementConfig((c) => ({ ...c, minSegmentDuration: parseInt(e.target.value) }))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-800" />
@@ -1019,7 +1019,7 @@ export default function VideoInventoryDetailPage() {
 
               {/* Video Player */}
               <div className="xl:col-span-3">
-                <div ref={playerContainerRef} className="rounded-2xl overflow-hidden bg-white border border-border-light shadow-sm">
+                <div ref={playerContainerRef} className="rounded-2xl overflow-hidden bg-white border border-border-secondary shadow-sm">
                   <div className="relative aspect-video bg-black" onClick={adPlaybackState ? undefined : togglePlay} style={{ cursor: adPlaybackState ? "default" : "pointer" }}>
                     {/* Main content video */}
                     <video
@@ -1080,7 +1080,7 @@ export default function VideoInventoryDetailPage() {
                   </div>
 
                   {/* Seekable Timeline with ad break markers */}
-                  <div className="px-3 pb-3 pt-2 bg-white border-t border-border-light">
+                  <div className="px-3 pb-3 pt-2 bg-white border-t border-border-secondary">
                     <div ref={timelineRef} className="relative h-6 cursor-pointer group/timeline" onClick={handleTimelineClick} onMouseMove={handleTimelineHover} onMouseLeave={() => setHoverTime(null)}>
                       <div className="absolute top-2.5 left-0 right-0 h-1.5 rounded-full bg-gray-100 group-hover/timeline:h-2.5 group-hover/timeline:top-2 transition-all duration-150 ring-1 ring-inset ring-black/5 overflow-hidden">
                         {segments && timelineBase > 0 && segments.map((seg, idx) => {
@@ -1101,14 +1101,14 @@ export default function VideoInventoryDetailPage() {
                         );
                       })}
                       {hoverTime !== null && (
-                        <div className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded shadow-sm border border-border-light bg-white text-[10px] font-medium text-text-primary tabular-nums pointer-events-none z-10" style={{ left: `${(hoverTime / (videoDuration || 1)) * 100}%` }}>{fmt(hoverTime)}</div>
+                        <div className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded shadow-sm border border-border-secondary bg-white text-[10px] font-medium text-foreground-body tabular-nums pointer-events-none z-10" style={{ left: `${(hoverTime / (videoDuration || 1)) * 100}%` }}>{fmt(hoverTime)}</div>
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-1 px-0.5">
-                      <span className="text-[11px] text-text-tertiary tabular-nums cursor-default">{fmt(videoTime)} / {fmt(duration)}</span>
-                      <div className="flex items-center gap-4 text-text-tertiary">
+                      <span className="text-[11px] text-foreground-muted tabular-nums cursor-default">{fmt(videoTime)} / {fmt(duration)}</span>
+                      <div className="flex items-center gap-4 text-foreground-muted">
                         <div className="flex items-center gap-2">
-                          <button onClick={toggleMute} className="w-5 h-5 flex items-center justify-center hover:text-text-primary transition-colors">
+                          <button onClick={toggleMute} className="w-5 h-5 flex items-center justify-center hover:text-foreground-body transition-colors">
                             {isMuted || volume === 0 ? (
                               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4"><path d="M11 5L6 9H2v6h4l5 4V5zM22 9l-6 6M16 9l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             ) : (
@@ -1120,12 +1120,12 @@ export default function VideoInventoryDetailPage() {
                         <div className="relative">
                           <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="text-[11px] font-semibold px-2 py-0.5 rounded hover:bg-gray-100 transition-colors">{playbackRate}x</button>
                           {showSpeedMenu && (
-                            <div className="absolute bottom-full right-0 mb-2 w-20 bg-white rounded-lg shadow-lg border border-border-light py-1 z-50 overflow-hidden">
-                              {[0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => (<button key={rate} onClick={() => changePlaybackRate(rate)} className={`w-full text-left px-3 py-1 text-[11px] hover:bg-gray-50 transition-colors ${playbackRate === rate ? "text-gray-900 font-semibold bg-gray-50" : "text-text-secondary"}`}>{rate}x</button>))}
+                            <div className="absolute bottom-full right-0 mb-2 w-20 bg-white rounded-lg shadow-lg border border-border-secondary py-1 z-50 overflow-hidden">
+                              {[0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => (<button key={rate} onClick={() => changePlaybackRate(rate)} className={`w-full text-left px-3 py-1 text-[11px] hover:bg-gray-50 transition-colors ${playbackRate === rate ? "text-gray-900 font-semibold bg-gray-50" : "text-foreground-subtle"}`}>{rate}x</button>))}
                             </div>
                           )}
                         </div>
-                        <button onClick={toggleFullScreen} className="w-5 h-5 flex items-center justify-center hover:text-text-primary transition-colors">
+                        <button onClick={toggleFullScreen} className="w-5 h-5 flex items-center justify-center hover:text-foreground-body transition-colors">
                           <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
                       </div>
@@ -1137,12 +1137,12 @@ export default function VideoInventoryDetailPage() {
                 <div className="mt-4 space-y-4">
                   {summaryData && !summaryLoading && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Summary</p>
-                      <p className="text-sm text-text-secondary leading-relaxed">{summaryData.summary}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Summary</p>
+                      <p className="text-sm text-foreground-subtle leading-relaxed">{summaryData.summary}</p>
                       {summaryData.targetAudience && summaryData.targetAudience.length > 0 && (
                         <div className="pt-1">
-                          <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-1.5">Target Audience</p>
-                          <div className="flex flex-wrap gap-2">{summaryData.targetAudience.map((aud) => (<span key={aud} className="px-2 py-0.5 rounded-full bg-gray-50 border border-border-light text-[11px] text-text-secondary">{aud}</span>))}</div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-1.5">Target Audience</p>
+                          <div className="flex flex-wrap gap-2">{summaryData.targetAudience.map((aud) => (<span key={aud} className="px-2 py-0.5 rounded-full bg-gray-50 border border-border-secondary text-[11px] text-foreground-subtle">{aud}</span>))}</div>
                         </div>
                       )}
                     </div>
@@ -1156,8 +1156,8 @@ export default function VideoInventoryDetailPage() {
                       { label: "File Size", value: fmtSize(size) },
                     ].map(({ label, value }) => (
                       <div key={label} className="px-3 py-2.5 rounded-lg bg-gray-50">
-                        <p className="text-[10px] text-text-tertiary mb-0.5">{label}</p>
-                        <p className="text-sm font-medium text-text-primary">{value}</p>
+                        <p className="text-[10px] text-foreground-muted mb-0.5">{label}</p>
+                        <p className="text-sm font-medium text-foreground-body">{value}</p>
                       </div>
                     ))}
                   </div>
@@ -1166,14 +1166,14 @@ export default function VideoInventoryDetailPage() {
 
               {/* ── Scene Intelligence Panel ── */}
               <div className="xl:col-span-2">
-                <div className="rounded-2xl border border-border-light bg-white overflow-hidden">
-                  <div className="px-4 py-3.5 border-b border-border-light bg-gray-50/60">
+                <div className="rounded-2xl border border-border-secondary bg-white overflow-hidden">
+                  <div className="px-4 py-3.5 border-b border-border-secondary bg-gray-50/60">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Scene Intelligence Extraction</h2>
-                        {segments && (<p className="text-[11px] text-text-tertiary mt-0.5">{segments.length} scene{segments.length !== 1 ? "s" : ""} detected{adBreaks.length > 0 ? ` / ${adBreaks.length} ad break${adBreaks.length !== 1 ? "s" : ""}` : ""}</p>)}
+                        <h2 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Scene Intelligence Extraction</h2>
+                        {segments && (<p className="text-[11px] text-foreground-muted mt-0.5">{segments.length} scene{segments.length !== 1 ? "s" : ""} detected{adBreaks.length > 0 ? ` / ${adBreaks.length} ad break${adBreaks.length !== 1 ? "s" : ""}` : ""}</p>)}
                       </div>
-                      {timelineLoading && (<div className="flex items-center gap-1.5 text-[11px] text-text-tertiary"><div className="w-3 h-3 rounded-full border-2 border-gray-300 border-t-gray-700 animate-spin" />Analyzing</div>)}
+                      {timelineLoading && (<div className="flex items-center gap-1.5 text-[11px] text-foreground-muted"><div className="w-3 h-3 rounded-full border-2 border-gray-300 border-t-gray-700 animate-spin" />Analyzing</div>)}
                     </div>
                     {/* Mini segment timeline with ad break markers */}
                     {segments && segments.length > 0 && timelineBase > 0 && (
@@ -1196,7 +1196,7 @@ export default function VideoInventoryDetailPage() {
                   <div className="divide-y divide-border-light max-h-[calc(100vh-260px)] overflow-y-auto">
                     {timelineLoading && (<div className="p-4 space-y-3 animate-pulse">{[1, 2, 3, 4].map((i) => (<div key={i} className="space-y-2"><div className="h-3 w-20 bg-gray-100 rounded-full" /><div className="h-4 w-full bg-gray-100 rounded-lg" /><div className="h-4 w-3/4 bg-gray-100 rounded-lg" /></div>))}</div>)}
                     {timelineError && (<div className="px-4 py-6 text-center"><p className="text-[11px] text-red-600">{timelineError}</p></div>)}
-                    {!timelineLoading && !timelineError && segments && segments.length === 0 && (<div className="px-4 py-6 text-center"><p className="text-[11px] text-text-tertiary">No scenes found.</p></div>)}
+                    {!timelineLoading && !timelineError && segments && segments.length === 0 && (<div className="px-4 py-6 text-center"><p className="text-[11px] text-foreground-muted">No scenes found.</p></div>)}
 
                     {!timelineLoading && segments && segments.map((seg, idx) => {
                       const isActive = activeSegmentIdx === idx;
@@ -1211,25 +1211,25 @@ export default function VideoInventoryDetailPage() {
                               <div className="flex items-center justify-between mb-1.5">
                                 <div className="flex items-center gap-2">
                                   <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ backgroundColor: `hsl(${hue}, 55%, 55%)` }}>{idx + 1}</div>
-                                  <button onClick={() => seekTo(seg.start_time)} className="text-[11px] text-text-tertiary font-medium tabular-nums hover:text-text-primary transition-colors flex items-center gap-1" title="Jump to scene">
+                                  <button onClick={() => seekTo(seg.start_time)} className="text-[11px] text-foreground-muted font-medium tabular-nums hover:text-foreground-body transition-colors flex items-center gap-1" title="Jump to scene">
                                     {fmt(seg.start_time)} - {fmt(seg.end_time)}
                                     <svg viewBox="0 0 10 10" fill="none" className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity"><path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                   </button>
                                 </div>
-                                <button onClick={() => setExpandedSegment({ seg, idx })} className="opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg border border-border-light bg-white text-[10px] text-text-tertiary hover:text-text-primary hover:border-gray-300 hover:shadow-sm transition-all">
+                                <button onClick={() => setExpandedSegment({ seg, idx })} className="opacity-0 group-hover:opacity-100 flex items-center gap-1 px-2 py-1 rounded-lg border border-border-secondary bg-white text-[10px] text-foreground-muted hover:text-foreground-body hover:border-gray-300 hover:shadow-sm transition-all">
                                   <svg viewBox="0 0 12 12" fill="none" className="w-2.5 h-2.5"><path d="M1 1h3.5M1 1v3.5M11 1H7.5M11 1v3.5M1 11h3.5M1 11V7.5M11 11H7.5M11 11V7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                   Details
                                 </button>
                               </div>
-                              <p className="text-[12px] text-text-primary leading-snug mb-2">{seg.scene_context}</p>
+                              <p className="text-[12px] text-foreground-body leading-snug mb-2">{seg.scene_context}</p>
                               {seg.cast_present && seg.cast_present.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mb-1.5">{seg.cast_present.slice(0, 4).map((name) => (<span key={name} className="text-[10px] text-text-tertiary">{name}</span>))}{seg.cast_present.length > 4 && (<span className="text-[10px] text-text-tertiary">+{seg.cast_present.length - 4}</span>)}</div>
+                                <div className="flex flex-wrap gap-1 mb-1.5">{seg.cast_present.slice(0, 4).map((name) => (<span key={name} className="text-[10px] text-foreground-muted">{name}</span>))}{seg.cast_present.length > 4 && (<span className="text-[10px] text-foreground-muted">+{seg.cast_present.length - 4}</span>)}</div>
                               )}
                               <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="flex items-center gap-1 text-[10px] text-text-tertiary"><span className={`w-1.5 h-1.5 rounded-full ${sentimentDot(seg.sentiment)}`} />{seg.sentiment}</span>
-                                <span className="text-[10px] text-text-tertiary/50">.</span>
-                                <span className="text-[10px] text-text-tertiary capitalize">{seg.tone}</span>
-                                {seg.environment && (<><span className="text-[10px] text-text-tertiary/50">.</span><span className="text-[10px] text-text-tertiary capitalize">{seg.environment.replace(/_/g, " ")}</span></>)}
+                                <span className="flex items-center gap-1 text-[10px] text-foreground-muted"><span className={`w-1.5 h-1.5 rounded-full ${sentimentDot(seg.sentiment)}`} />{seg.sentiment}</span>
+                                <span className="text-[10px] text-foreground-muted/50">.</span>
+                                <span className="text-[10px] text-foreground-muted capitalize">{seg.tone}</span>
+                                {seg.environment && (<><span className="text-[10px] text-foreground-muted/50">.</span><span className="text-[10px] text-foreground-muted capitalize">{seg.environment.replace(/_/g, " ")}</span></>)}
                                 {seg.ad_break_fitness && (
                                   <span className={`ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded ${bq === "high" ? "text-green-700 bg-green-50" : bq === "medium" ? "text-amber-700 bg-amber-50" : "text-red-700 bg-red-50"}`}>
                                     {seg.ad_break_fitness.post_segment_break_quality} break
@@ -1237,7 +1237,7 @@ export default function VideoInventoryDetailPage() {
                                 )}
                               </div>
                               {seg.ad_suitability?.suitable_categories && seg.ad_suitability.suitable_categories.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">{seg.ad_suitability.suitable_categories.slice(0, 3).map((cat) => (<span key={cat} className="px-1.5 py-0.5 rounded text-[10px] bg-mb-green-light/20 text-mb-green-dark border border-mb-green-light/40">{cat}</span>))}{seg.ad_suitability.suitable_categories.length > 3 && (<span className="text-[10px] text-text-tertiary px-1 py-0.5">+{seg.ad_suitability.suitable_categories.length - 3}</span>)}</div>
+                                <div className="flex flex-wrap gap-1 mt-2">{seg.ad_suitability.suitable_categories.slice(0, 3).map((cat) => (<span key={cat} className="px-1.5 py-0.5 rounded text-[10px] bg-tl-master-brand-light-green/20 text-tl-master-brand-dark-green border border-tl-master-brand-light-green/40">{cat}</span>))}{seg.ad_suitability.suitable_categories.length > 3 && (<span className="text-[10px] text-foreground-muted px-1 py-0.5">+{seg.ad_suitability.suitable_categories.length - 3}</span>)}</div>
                               )}
                             </div>
                           </div>
@@ -1265,14 +1265,14 @@ export default function VideoInventoryDetailPage() {
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-sm font-semibold text-text-primary">Contextual Ad Placements</h2>
-                    <p className="text-xs text-text-tertiary mt-0.5">
-                      {adBreaks.length} break{adBreaks.length !== 1 ? "s" : ""} identified / {adInventory.length} ad{adInventory.length !== 1 ? "s" : ""} in inventory / Viewing as <span className="font-medium text-text-primary">{selectedUser.name}</span>
+                    <h2 className="text-sm font-semibold text-foreground-body">Contextual Ad Placements</h2>
+                    <p className="text-xs text-foreground-muted mt-0.5">
+                      {adBreaks.length} break{adBreaks.length !== 1 ? "s" : ""} identified / {adInventory.length} ad{adInventory.length !== 1 ? "s" : ""} in inventory / Viewing as <span className="font-medium text-foreground-body">{selectedUser.name}</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {adInventoryLoading && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
+                      <div className="flex items-center gap-1.5 text-[11px] text-foreground-muted">
                         <div className="w-3 h-3 rounded-full border-2 border-gray-300 border-t-gray-700 animate-spin" />
                         Loading ads
                       </div>
@@ -1293,12 +1293,12 @@ export default function VideoInventoryDetailPage() {
                     const selectedAd = planEntry?.selectedAd;
                     const sceneFit = selectedAd?.scores.sceneFit ?? 0;
                     return (
-                      <button key={i} onClick={() => { setSelectedBreakIdx(i); setExpandedAdId(null); }} className={`shrink-0 px-4 py-2.5 rounded-xl border transition-all ${selectedBreakIdx === i ? "border-green-500 bg-green-50 shadow-sm" : "border-border-light bg-white hover:bg-gray-50"}`}>
+                      <button key={i} onClick={() => { setSelectedBreakIdx(i); setExpandedAdId(null); }} className={`shrink-0 px-4 py-2.5 rounded-xl border transition-all ${selectedBreakIdx === i ? "border-green-500 bg-green-50 shadow-sm" : "border-border-secondary bg-white hover:bg-gray-50"}`}>
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-2.5 h-2.5 rotate-45 bg-green-500 rounded-[1px]" />
-                          <span className="text-[11px] font-semibold text-text-primary">Break {i + 1}</span>
+                          <span className="text-[11px] font-semibold text-foreground-body">Break {i + 1}</span>
                         </div>
-                        <div className="text-[10px] text-text-tertiary tabular-nums">{fmt(brk.timestamp)}</div>
+                        <div className="text-[10px] text-foreground-muted tabular-nums">{fmt(brk.timestamp)}</div>
                         {selectedAd && (
                           <div className="mt-1 space-y-0.5">
                             <div className="text-[10px] text-green-700 font-medium truncate max-w-[140px]">{selectedAd.ad.brand}</div>
@@ -1306,7 +1306,7 @@ export default function VideoInventoryDetailPage() {
                               <div className="h-0.5 rounded-full bg-gray-200 flex-1 overflow-hidden">
                                 <div className={`h-full rounded-full ${sceneFit >= 0.6 ? "bg-green-500" : sceneFit >= 0.35 ? "bg-amber-400" : "bg-red-400"}`} style={{ width: `${sceneFit * 100}%` }} />
                               </div>
-                              <span className="text-[9px] text-text-tertiary tabular-nums">{(sceneFit * 100).toFixed(0)}% fit</span>
+                              <span className="text-[9px] text-foreground-muted tabular-nums">{(sceneFit * 100).toFixed(0)}% fit</span>
                             </div>
                           </div>
                         )}
@@ -1317,18 +1317,18 @@ export default function VideoInventoryDetailPage() {
 
                 {/* Ranked ads for selected break */}
                 {adBreaks[selectedBreakIdx] && (
-                  <div className="rounded-2xl border border-border-light overflow-hidden">
-                    <div className="px-5 py-3 bg-gray-50/60 border-b border-border-light">
+                  <div className="rounded-2xl border border-border-secondary overflow-hidden">
+                    <div className="px-5 py-3 bg-gray-50/60 border-b border-border-secondary">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Break {selectedBreakIdx + 1} at {fmt(adBreaks[selectedBreakIdx].timestamp)}</span>
-                          <span className="text-[10px] text-text-tertiary ml-3">
+                          <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Break {selectedBreakIdx + 1} at {fmt(adBreaks[selectedBreakIdx].timestamp)}</span>
+                          <span className="text-[10px] text-foreground-muted ml-3">
                             {eligibleAds.length} eligible / {disqualifiedAds.length} disqualified
                           </span>
                         </div>
-                        <div className="text-right shrink-0 text-[10px] text-text-tertiary space-y-0.5">
-                          <div>Scene: <span className="text-text-primary font-medium">{adBreaks[selectedBreakIdx].precedingSegment.sentiment} / {adBreaks[selectedBreakIdx].precedingSegment.tone}</span></div>
-                          <div>Environment: <span className="text-text-primary font-medium capitalize">{adBreaks[selectedBreakIdx].precedingSegment.environment || "—"}</span></div>
+                        <div className="text-right shrink-0 text-[10px] text-foreground-muted space-y-0.5">
+                          <div>Scene: <span className="text-foreground-body font-medium">{adBreaks[selectedBreakIdx].precedingSegment.sentiment} / {adBreaks[selectedBreakIdx].precedingSegment.tone}</span></div>
+                          <div>Environment: <span className="text-foreground-body font-medium capitalize">{adBreaks[selectedBreakIdx].precedingSegment.environment || "—"}</span></div>
                         </div>
                       </div>
                       {currentPlanEntry?.diversityApplied && (
@@ -1396,7 +1396,7 @@ export default function VideoInventoryDetailPage() {
                     <div className="divide-y divide-border-light">
                       {eligibleAds.length === 0 && !adInventoryLoading && (
                         <div className="px-5 py-8 text-center">
-                          <p className="text-[11px] text-text-tertiary">No eligible ads for this break position.</p>
+                          <p className="text-[11px] text-foreground-muted">No eligible ads for this break position.</p>
                         </div>
                       )}
                       {eligibleAds.slice(0, 5).map((result, rank) => {
@@ -1407,7 +1407,7 @@ export default function VideoInventoryDetailPage() {
                             <div className="px-5 py-3.5 flex items-start gap-4">
                               {/* Rank badge */}
                               <div className="flex flex-col items-center gap-1 shrink-0">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold ${rank === 0 ? "bg-gray-900 text-white" : rank === 1 ? "bg-gray-700 text-white" : "bg-gray-200 text-text-primary"}`}>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold ${rank === 0 ? "bg-gray-900 text-white" : rank === 1 ? "bg-gray-700 text-white" : "bg-gray-200 text-foreground-body"}`}>
                                   {rank + 1}
                                 </div>
                                 {isSelectedByDiversity && (
@@ -1425,21 +1425,21 @@ export default function VideoInventoryDetailPage() {
                               {/* Info */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-[12px] font-semibold text-text-primary truncate">
+                                  <span className="text-[12px] font-semibold text-foreground-body truncate">
                                     {result.ad.proposedTitle || result.ad.brand}
                                   </span>
-                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-gray-100 text-text-tertiary uppercase shrink-0">{result.ad.category_key.replace(/_/g, " ")}</span>
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-gray-100 text-foreground-muted uppercase shrink-0">{result.ad.category_key.replace(/_/g, " ")}</span>
                                 </div>
-                                <p className="text-[10px] text-text-tertiary mb-0.5 truncate">Company: {result.ad.brand}</p>
-                                <p className="text-[11px] text-text-secondary leading-snug">{toProfessionalSentenceCase(result.matchExplanation)}</p>
+                                <p className="text-[10px] text-foreground-muted mb-0.5 truncate">Company: {result.ad.brand}</p>
+                                <p className="text-[11px] text-foreground-subtle leading-snug">{toProfessionalSentenceCase(result.matchExplanation)}</p>
                               </div>
 
                               {/* Score */}
                               <div className="text-right shrink-0">
-                                <div className={`text-lg font-black tabular-nums ${result.totalScore >= 0.5 ? "text-green-600" : result.totalScore >= 0.3 ? "text-amber-600" : "text-text-primary"}`}>
+                                <div className={`text-lg font-black tabular-nums ${result.totalScore >= 0.5 ? "text-green-600" : result.totalScore >= 0.3 ? "text-amber-600" : "text-foreground-body"}`}>
                                   {(result.totalScore * 100).toFixed(0)}
                                 </div>
-                                <div className="text-[9px] text-text-tertiary uppercase tracking-wider">Score</div>
+                                <div className="text-[9px] text-foreground-muted uppercase tracking-wider">Score</div>
                                 <button
                                   type="button"
                                   onClick={() => setPreviewAd(result)}
@@ -1453,7 +1453,7 @@ export default function VideoInventoryDetailPage() {
                               </div>
 
                               {/* Expand button */}
-                              <button onClick={() => setExpandedAdId(isExpanded ? null : result.ad.id)} className="w-6 h-6 rounded flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors shrink-0 mt-1">
+                              <button onClick={() => setExpandedAdId(isExpanded ? null : result.ad.id)} className="w-6 h-6 rounded flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors shrink-0 mt-1">
                                 <svg viewBox="0 0 10 6" fill="none" className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                               </button>
                             </div>
@@ -1461,17 +1461,17 @@ export default function VideoInventoryDetailPage() {
                             {/* Expanded signal chain */}
                             {isExpanded && (
                               <div className="px-5 pb-4 pt-0">
-                                <div className="rounded-xl bg-gray-50 border border-border-light p-4 space-y-3">
-                                  <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">Signal Chain</p>
+                                <div className="rounded-xl bg-gray-50 border border-border-secondary p-4 space-y-3">
+                                  <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Signal Chain</p>
 
                                   {/* ── User Match ─────────────────────── */}
                                   <div className={`rounded-lg px-3 py-2.5 ${result.scores.adAffinity >= 0.7 ? "bg-green-50 ring-1 ring-green-200" : result.scores.adAffinity >= 0.4 ? "bg-amber-50 ring-1 ring-amber-200" : "bg-gray-50 ring-1 ring-gray-200"}`}>
                                     <ScoreBar value={result.scores.adAffinity} label="User Match" />
-                                    <p className="text-[9px] text-text-tertiary mt-1 mb-1.5">Pre-calculated: category affinity + demographics + viewing context</p>
+                                    <p className="text-[9px] text-foreground-muted mt-1 mb-1.5">Pre-calculated: category affinity + demographics + viewing context</p>
                                     {result.signalChain.eligibilityReasoning.length > 0 && (
                                       <ul className="space-y-0.5">
                                         {result.signalChain.eligibilityReasoning.filter(r => !r.startsWith("EXCLUDED")).slice(0, 4).map((r, ri) => (
-                                          <li key={ri} className="text-[9px] text-text-tertiary leading-tight">{r}</li>
+                                          <li key={ri} className="text-[9px] text-foreground-muted leading-tight">{r}</li>
                                         ))}
                                       </ul>
                                     )}
@@ -1494,17 +1494,17 @@ export default function VideoInventoryDetailPage() {
                                             <svg viewBox="0 0 8 8" fill="none" className="w-2 h-2"><circle cx="4" cy="4" r="3" stroke="currentColor" strokeWidth="1"/><path d="M4 2v2l1.5 1" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
                                             Vector Similarity
                                           </span>
-                                          <span className="text-[9px] text-text-tertiary">
-                                            Cosine sim: <span className="font-semibold text-text-primary tabular-nums">
+                                          <span className="text-[9px] text-foreground-muted">
+                                            Cosine sim: <span className="font-semibold text-foreground-body tabular-nums">
                                               {result.signalChain.vectorSimilarity !== null
                                                 ? result.signalChain.vectorSimilarity.toFixed(4)
                                                 : "—"}
                                             </span>
-                                            {" "}→ normalized: <span className="font-semibold text-text-primary tabular-nums">{result.scores.contextMatch.toFixed(3)}</span>
+                                            {" "}→ normalized: <span className="font-semibold text-foreground-body tabular-nums">{result.scores.contextMatch.toFixed(3)}</span>
                                           </span>
                                         </div>
                                       ) : (
-                                        <p className="text-[9px] text-text-tertiary italic flex items-center gap-1.5">
+                                        <p className="text-[9px] text-foreground-muted italic flex items-center gap-1.5">
                                           {embeddingsLoading
                                             ? <>
                                                 <svg className="w-2.5 h-2.5 animate-spin" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="14 8" /></svg>
@@ -1517,13 +1517,13 @@ export default function VideoInventoryDetailPage() {
                                   </div>
 
                                   {/* ── Formula ─────────────────────────── */}
-                                  <p className="text-[9px] text-text-tertiary tabular-nums">
-                                    {result.scores.adAffinity.toFixed(2)} (user) × {result.scores.sceneFit.toFixed(2)} (scene) = <span className="font-bold text-text-primary">{result.totalScore.toFixed(3)}</span>
+                                  <p className="text-[9px] text-foreground-muted tabular-nums">
+                                    {result.scores.adAffinity.toFixed(2)} (user) × {result.scores.sceneFit.toFixed(2)} (scene) = <span className="font-bold text-foreground-body">{result.totalScore.toFixed(3)}</span>
                                   </p>
 
                                   {/* ── Gate Results ─────────────────────── */}
                                   <div>
-                                    <p className="text-[10px] text-text-tertiary mb-1">Eligibility Gates</p>
+                                    <p className="text-[10px] text-foreground-muted mb-1">Eligibility Gates</p>
                                     <div className="flex flex-wrap gap-1.5">
                                       {result.signalChain.gateResults.map((g) => (
                                         <span key={g.gate} className={`px-2 py-0.5 rounded text-[10px] font-medium ${g.passed ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`} title={g.reason || ""}>
@@ -1535,11 +1535,11 @@ export default function VideoInventoryDetailPage() {
 
                                   {/* ── Scene metadata ───────────────────── */}
                                   <div className="grid grid-cols-2 gap-3 text-[10px]">
-                                    <div><span className="text-text-tertiary">Scene: </span><span className="text-text-primary">{result.signalChain.segmentSentiment} / {result.signalChain.segmentTone}</span></div>
-                                    <div><span className="text-text-tertiary">Environment: </span><span className="text-text-primary capitalize">{result.signalChain.segmentEnvironment.replace(/_/g, " ") || "—"}</span></div>
-                                    <div><span className="text-text-tertiary">Brand safety: </span><span className={result.signalChain.brandSafetyStatus ? "text-green-700" : "text-red-700"}>{result.signalChain.brandSafetyStatus ? "Safe" : "Flagged"} ({result.signalChain.riskLevel})</span></div>
+                                    <div><span className="text-foreground-muted">Scene: </span><span className="text-foreground-body">{result.signalChain.segmentSentiment} / {result.signalChain.segmentTone}</span></div>
+                                    <div><span className="text-foreground-muted">Environment: </span><span className="text-foreground-body capitalize">{result.signalChain.segmentEnvironment.replace(/_/g, " ") || "—"}</span></div>
+                                    <div><span className="text-foreground-muted">Brand safety: </span><span className={result.signalChain.brandSafetyStatus ? "text-green-700" : "text-red-700"}>{result.signalChain.brandSafetyStatus ? "Safe" : "Flagged"} ({result.signalChain.riskLevel})</span></div>
                                     {result.signalChain.segmentThemes.length > 0 && (
-                                      <div><span className="text-text-tertiary">Themes: </span><span className="text-text-primary">{result.signalChain.segmentThemes.slice(0, 2).join(", ")}</span></div>
+                                      <div><span className="text-foreground-muted">Themes: </span><span className="text-foreground-body">{result.signalChain.segmentThemes.slice(0, 2).join(", ")}</span></div>
                                     )}
                                   </div>
                                 </div>
@@ -1552,8 +1552,8 @@ export default function VideoInventoryDetailPage() {
 
                     {/* Disqualified ads section */}
                     {disqualifiedAds.length > 0 && (
-                      <div className="border-t border-border-light">
-                        <button onClick={() => setShowDisqualified(!showDisqualified)} className="w-full px-5 py-2.5 flex items-center justify-between text-[11px] text-text-tertiary hover:bg-gray-50 transition-colors">
+                      <div className="border-t border-border-secondary">
+                        <button onClick={() => setShowDisqualified(!showDisqualified)} className="w-full px-5 py-2.5 flex items-center justify-between text-[11px] text-foreground-muted hover:bg-gray-50 transition-colors">
                           <span className="font-semibold">{disqualifiedAds.length} Disqualified Ad{disqualifiedAds.length !== 1 ? "s" : ""}</span>
                           <svg viewBox="0 0 10 6" fill="none" className={`w-3 h-3 transition-transform ${showDisqualified ? "rotate-180" : ""}`}><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         </button>
@@ -1565,8 +1565,8 @@ export default function VideoInventoryDetailPage() {
                                   <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M3 3l6 6M9 3L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <span className="text-[11px] font-medium text-text-primary">{result.ad.brand}</span>
-                                  <span className="text-[10px] text-text-tertiary ml-2">{result.ad.category_key.replace(/_/g, " ")}</span>
+                                  <span className="text-[11px] font-medium text-foreground-body">{result.ad.brand}</span>
+                                  <span className="text-[10px] text-foreground-muted ml-2">{result.ad.category_key.replace(/_/g, " ")}</span>
                                 </div>
                                 <div className="text-[10px] text-red-600 max-w-[300px] truncate">{result.disqualificationReasons[0]}</div>
                               </div>
@@ -1582,14 +1582,14 @@ export default function VideoInventoryDetailPage() {
 
             {/* Loading state for ad placement engine */}
             {segments && segments.length > 0 && adBreaks.length === 0 && !timelineLoading && (
-              <div className="rounded-xl border border-border-light bg-gray-50/60 px-5 py-8 text-center">
+              <div className="rounded-xl border border-border-secondary bg-gray-50/60 px-5 py-8 text-center">
                 {adInventoryLoading ? (
-                  <div className="flex items-center justify-center gap-2 text-[11px] text-text-tertiary">
+                  <div className="flex items-center justify-center gap-2 text-[11px] text-foreground-muted">
                     <div className="w-3 h-3 rounded-full border-2 border-gray-300 border-t-gray-700 animate-spin" />
                     Loading ad inventory...
                   </div>
                 ) : (
-                  <p className="text-[11px] text-text-tertiary">
+                  <p className="text-[11px] text-foreground-muted">
                     No suitable ad break positions found with current configuration. Try adjusting the safety mode or reducing minimum spacing.
                   </p>
                 )}

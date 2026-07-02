@@ -295,7 +295,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
             ref={containerRef}
             className={isVideoInventory
                 ? "group relative flex flex-col"
-                : "group relative flex flex-col bg-white rounded-xl shadow-sm border border-border-light overflow-hidden hover:shadow-md transition-all duration-200"}
+                : "group relative flex flex-col bg-white rounded-xl shadow-sm border border-border-secondary overflow-hidden hover:shadow-md transition-all duration-200"}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
@@ -303,7 +303,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                 href={targetUrl}
                 className={
                     isVideoInventory
-                        ? "relative w-full aspect-video bg-black overflow-hidden isolate rounded-xl border border-border-light"
+                        ? "relative w-full aspect-video bg-black overflow-hidden isolate rounded-xl border border-border-secondary"
                         : "relative w-full aspect-video bg-black overflow-hidden isolate"
                 }
             >
@@ -350,7 +350,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
 
                 {/* Duration badge & Match Badge */}
                 {searchMatch && (
-                    <div className="absolute top-2 left-2 px-2 py-1 rounded bg-mb-green-dark/90 text-white text-[10px] font-bold shadow-sm backdrop-blur-sm z-10 flex items-center gap-1.5 border border-white/20">
+                    <div className="absolute top-2 left-2 px-2 py-1 rounded bg-tl-master-brand-dark-green/90 text-white text-[10px] font-bold shadow-sm backdrop-blur-sm z-10 flex items-center gap-1.5 border border-white/20">
                         <span className="flex items-center gap-1">
                             <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
                             {formatDuration(searchMatch.start)}
@@ -398,7 +398,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                     <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-4">
                         {searchMatch && duration > 0 && (
                             <div
-                                className="absolute top-0 bottom-0 bg-mb-pink-dark/80 z-10"
+                                className="absolute top-0 bottom-0 bg-tl-master-brand-dark-pink/80 z-10"
                                 style={{
                                     left: `${(searchMatch.start / duration) * 100}%`,
                                     width: `${(Math.max(searchMatch.end - searchMatch.start, 1) / duration) * 100}%`
@@ -414,8 +414,8 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                 <p
                     className={
                         isVideoInventory
-                            ? "mt-2 text-[11px] text-text-primary font-medium truncate"
-                            : "mt-2 px-3 pb-3 text-[11px] text-text-primary font-medium truncate"
+                            ? "mt-2 text-[11px] text-foreground-body font-medium truncate"
+                            : "mt-2 px-3 pb-3 text-[11px] text-foreground-body font-medium truncate"
                     }
                 >
                     {displayName}

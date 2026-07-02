@@ -138,8 +138,8 @@ function VideoPreviewCard({
                 <div className="h-full bg-white/80 transition-[width] duration-75" style={{ width: `${progress}%` }} />
             </div>
             <div className="px-2.5 py-2 bg-white">
-                <p className="text-[11px] text-text-primary truncate font-medium">{info.file.name}</p>
-                <p className="text-[10px] text-text-tertiary">{(info.file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                <p className="text-[11px] text-foreground-body truncate font-medium">{info.file.name}</p>
+                <p className="text-[10px] text-foreground-muted">{(info.file.size / (1024 * 1024)).toFixed(1)} MB</p>
             </div>
         </div>
     );
@@ -155,11 +155,11 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
     return (
         <div className={`rounded-xl border p-4 space-y-3 transition-all duration-300 ${isDone ? "border-green-200 bg-green-50/50" :
             isError ? "border-red-200 bg-red-50/50" :
-                "border-border-light bg-gray-50/50"
+                "border-border-secondary bg-gray-50/50"
             }`}>
             {/* Status row */}
             <div className="flex items-center gap-3">
-                {!isDone && !isError && <Spinner className="w-4 h-4 text-text-secondary" />}
+                {!isDone && !isError && <Spinner className="w-4 h-4 text-foreground-subtle" />}
                 {isDone && (
                     <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 text-green-600">
                         <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
@@ -173,14 +173,14 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
                     </svg>
                 )}
                 <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-medium truncate ${isDone ? "text-green-700" : isError ? "text-red-600" : "text-text-primary"}`}>
+                    <p className={`text-xs font-medium truncate ${isDone ? "text-green-700" : isError ? "text-red-600" : "text-foreground-body"}`}>
                         {progress.message}
                     </p>
                     {progress.currentFile && !isDone && (
-                        <p className="text-[10px] text-text-tertiary truncate mt-0.5">{progress.currentFile}</p>
+                        <p className="text-[10px] text-foreground-muted truncate mt-0.5">{progress.currentFile}</p>
                     )}
                 </div>
-                <span className="text-[11px] font-medium text-text-secondary tabular-nums shrink-0">
+                <span className="text-[11px] font-medium text-foreground-subtle tabular-nums shrink-0">
                     {Math.round(progress.percent)}%
                 </span>
             </div>
@@ -198,11 +198,11 @@ function UploadProgressBanner({ progress }: { progress: UploadProgress }) {
 
             {/* Phase breakdown */}
             {(progress.phase === "blob" || progress.phase === "twelvelabs") && (
-                <div className="flex items-center gap-4 text-[10px] text-text-tertiary">
-                    <span className={progress.phase === "blob" ? "text-text-secondary font-medium" : ""}>
+                <div className="flex items-center gap-4 text-[10px] text-foreground-muted">
+                    <span className={progress.phase === "blob" ? "text-foreground-subtle font-medium" : ""}>
                         Vercel Blob: {progress.blobCompleted}/{progress.blobTotal}
                     </span>
-                    <span className={progress.phase === "twelvelabs" ? "text-text-secondary font-medium" : ""}>
+                    <span className={progress.phase === "twelvelabs" ? "text-foreground-subtle font-medium" : ""}>
                         TwelveLabs: {progress.tlCompleted}/{progress.tlTotal}
                     </span>
                 </div>
@@ -545,14 +545,14 @@ export default function AddCategoryModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-border-light shrink-0">
-                    <h2 className="text-lg font-semibold text-text-primary">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border-secondary shrink-0">
+                    <h2 className="text-lg font-semibold text-foreground-body">
                         {videoOnly ? "Add Videos" : "Add Category"}
                     </h2>
                     {!uploading && (
                         <button
                             onClick={handleReset}
-                            className="p-1.5 rounded-md text-text-tertiary hover:text-text-primary hover:bg-gray-50 transition-colors duration-200"
+                            className="p-1.5 rounded-md text-foreground-muted hover:text-foreground-body hover:bg-gray-50 transition-colors duration-200"
                             aria-label="Close modal"
                         >
                             <svg viewBox="0 0 12 12" fill="none" className="w-4 h-4">
@@ -569,27 +569,27 @@ export default function AddCategoryModal({
 
                     {/* Category Name */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">Category Name</label>
+                        <label className="block text-sm font-medium text-foreground-body mb-2">Category Name</label>
                         <input
                             type="text"
                             value={videoOnly ? categoryName : name}
                             onChange={(e) => !videoOnly && setName(e.target.value)}
                             placeholder="e.g. Premium Spirits, Automotive"
                             disabled={videoOnly || uploading}
-                            className={`w-full px-4 py-2.5 rounded-lg border border-border-light text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-default transition-colors ${(videoOnly || uploading) ? "bg-gray-50 text-text-secondary cursor-not-allowed" : "bg-white"}`}
+                            className={`w-full px-4 py-2.5 rounded-lg border border-border-secondary text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none focus:border-border-primary transition-colors ${(videoOnly || uploading) ? "bg-gray-50 text-foreground-subtle cursor-not-allowed" : "bg-white"}`}
                         />
                     </div>
 
                     {/* Target Contexts */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">Target Contexts</label>
+                        <label className="block text-sm font-medium text-foreground-body mb-2">Target Contexts</label>
                         {(videoOnly ? categoryContexts : contexts).length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-2">
                                 {(videoOnly ? categoryContexts : contexts).map((ctx) => (
-                                    <span key={ctx} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-mb-green-light/40 text-[11px] font-medium text-mb-green-dark ${(videoOnly || uploading) ? "opacity-60" : ""}`}>
+                                    <span key={ctx} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tl-master-brand-light-green border border-tl-master-brand-light-green text-[11px] font-medium text-tl-master-brand-dark-green ${(videoOnly || uploading) ? "opacity-60" : ""}`}>
                                         {ctx}
                                         {!videoOnly && !uploading && (
-                                            <button onClick={() => setContexts(contexts.filter((c) => c !== ctx))} className="hover:text-text-primary transition-colors">
+                                            <button onClick={() => setContexts(contexts.filter((c) => c !== ctx))} className="hover:text-foreground-body transition-colors">
                                                 <svg viewBox="0 0 8 8" fill="none" className="w-2.5 h-2.5"><path d="M6 2L2 6M2 2L6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
                                             </button>
                                         )}
@@ -605,12 +605,12 @@ export default function AddCategoryModal({
                                     onChange={(e) => setContextInput(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleContextAdd(contextInput); } }}
                                     placeholder="Type and press Enter to add..."
-                                    className="w-full px-4 py-2.5 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-default transition-colors"
+                                    className="w-full px-4 py-2.5 rounded-lg border border-border-secondary bg-white text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none focus:border-border-primary transition-colors"
                                 />
                                 {filteredContextSuggestions.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mt-2">
                                         {filteredContextSuggestions.map((s) => (
-                                            <button key={s} onClick={() => handleContextAdd(s)} className="px-2.5 py-1 rounded-full border border-border-light text-[11px] font-medium text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors">
+                                            <button key={s} onClick={() => handleContextAdd(s)} className="px-2.5 py-1 rounded-full border border-border-secondary text-[11px] font-medium text-foreground-subtle hover:bg-gray-50 hover:text-foreground-body transition-colors">
                                                 + {s}
                                             </button>
                                         ))}
@@ -622,14 +622,14 @@ export default function AddCategoryModal({
 
                     {/* Exclusions */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">Exclusions</label>
+                        <label className="block text-sm font-medium text-foreground-body mb-2">Exclusions</label>
                         {(videoOnly ? categoryExclusions : exclusions).length > 0 && (
                             <div className="flex flex-wrap gap-1.5 mb-2">
                                 {(videoOnly ? categoryExclusions : exclusions).map((exc) => (
-                                    <span key={exc} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-mb-pink-light/40 text-[11px] font-medium text-mb-pink-dark ${(videoOnly || uploading) ? "opacity-60" : ""}`}>
+                                    <span key={exc} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tl-master-brand-light-pink border border-tl-master-brand-light-pink text-[11px] font-medium text-tl-master-brand-dark-pink ${(videoOnly || uploading) ? "opacity-60" : ""}`}>
                                         {exc}
                                         {!videoOnly && !uploading && (
-                                            <button onClick={() => setExclusions(exclusions.filter((e) => e !== exc))} className="hover:text-text-primary transition-colors">
+                                            <button onClick={() => setExclusions(exclusions.filter((e) => e !== exc))} className="hover:text-foreground-body transition-colors">
                                                 <svg viewBox="0 0 8 8" fill="none" className="w-2.5 h-2.5"><path d="M6 2L2 6M2 2L6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
                                             </button>
                                         )}
@@ -645,12 +645,12 @@ export default function AddCategoryModal({
                                     onChange={(e) => setExclusionInput(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleExclusionAdd(exclusionInput); } }}
                                     placeholder="Type and press Enter to add..."
-                                    className="w-full px-4 py-2.5 rounded-lg border border-border-light bg-white text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-default transition-colors"
+                                    className="w-full px-4 py-2.5 rounded-lg border border-border-secondary bg-white text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none focus:border-border-primary transition-colors"
                                 />
                                 {filteredExclusionSuggestions.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mt-2">
                                         {filteredExclusionSuggestions.map((s) => (
-                                            <button key={s} onClick={() => handleExclusionAdd(s)} className="px-2.5 py-1 rounded-full border border-border-light text-[11px] font-medium text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors">
+                                            <button key={s} onClick={() => handleExclusionAdd(s)} className="px-2.5 py-1 rounded-full border border-border-secondary text-[11px] font-medium text-foreground-subtle hover:bg-gray-50 hover:text-foreground-body transition-colors">
                                                 + {s}
                                             </button>
                                         ))}
@@ -662,10 +662,10 @@ export default function AddCategoryModal({
 
                     {/* Video Upload */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">
+                        <label className="block text-sm font-medium text-foreground-body mb-2">
                             Upload Videos
                             {videoFiles.length > 0 && (
-                                <span className="text-text-tertiary font-normal ml-1">({videoFiles.length})</span>
+                                <span className="text-foreground-muted font-normal ml-1">({videoFiles.length})</span>
                             )}
                         </label>
 
@@ -680,7 +680,7 @@ export default function AddCategoryModal({
                   transition-all duration-200
                   ${dragOver
                                         ? "border-gray-700 bg-gray-50"
-                                        : "border-border-light hover:border-border-default hover:bg-gray-50/50"
+                                        : "border-border-secondary hover:border-border-primary hover:bg-gray-50/50"
                                     }
                 `}
                             >
@@ -693,14 +693,14 @@ export default function AddCategoryModal({
                                     className="hidden"
                                 />
                                 <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-gray-50 flex items-center justify-center">
-                                    <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5 text-text-tertiary">
+                                    <svg viewBox="0 0 16 16" fill="none" className="w-5 h-5 text-foreground-muted">
                                         <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                     </svg>
                                 </div>
-                                <p className="text-sm text-text-secondary mb-0.5">
-                                    Drop video files here, or <span className="text-text-primary font-medium">browse</span>
+                                <p className="text-sm text-foreground-subtle mb-0.5">
+                                    Drop video files here, or <span className="text-foreground-body font-medium">browse</span>
                                 </p>
-                                <p className="text-xs text-text-tertiary">
+                                <p className="text-xs text-foreground-muted">
                                     Supports MP4, MOV, AVI, MKV, WebM
                                 </p>
                             </div>
@@ -722,12 +722,12 @@ export default function AddCategoryModal({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light shrink-0">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-secondary shrink-0">
                     {!uploading ? (
                         <>
                             <button
                                 onClick={handleReset}
-                                className="px-4 py-2 rounded-full border border-border-default text-sm font-medium text-text-primary hover:border-gray-700 transition-all duration-200 hover:rounded-2xl"
+                                className="px-4 py-2 rounded-full border border-border-primary text-sm font-medium text-foreground-body hover:border-gray-700 transition-all duration-200 hover:rounded-2xl"
                             >
                                 Cancel
                             </button>
@@ -738,7 +738,7 @@ export default function AddCategoryModal({
                   px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:rounded-2xl
                   ${isValid
                                         ? "bg-gray-700 text-white hover:bg-gray-600"
-                                        : "bg-gray-100 text-text-tertiary cursor-not-allowed"
+                                        : "bg-gray-100 text-foreground-muted cursor-not-allowed"
                                     }
                 `}
                             >
@@ -753,7 +753,7 @@ export default function AddCategoryModal({
                             Done
                         </button>
                     ) : (
-                        <p className="text-xs text-text-tertiary">
+                        <p className="text-xs text-foreground-muted">
                             Upload in progress — please don&apos;t close this window
                         </p>
                     )}

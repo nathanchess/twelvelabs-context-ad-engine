@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useVideos } from "../lib/videoCache";
+import { Button, PlusIcon } from "@twelvelabs-io/react";
 import VideoInventoryUploadModal from "../components/VideoInventoryUploadModal";
 import VideoInventoryCard from "../components/VideoInventoryCard";
 import { useVideoInventoryPrefs } from "../lib/videoInventoryStore";
@@ -34,9 +35,7 @@ const searchIcon = (
     </svg>
 );
 
-const plusIcon = (
-    <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 ml-[-2px]"><path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-);
+const plusIcon = <PlusIcon className="size-4" />;
 
 type SearchResult = { videoId: string; start: number; end: number; confidence: string; score: number };
 
@@ -120,34 +119,37 @@ export default function VideoInventoryPage() {
             <ScrollProgressBar />
 
             <ScrollFadeUp order={0}>
-            <header className="border-b border-border-light px-8 py-6 flex justify-between items-start">
+            <header className="border-b border-border-secondary px-8 py-6 flex justify-between items-start">
                 <div>
-                    <h1 className="text-[32px] font-bold tracking-[-1.5px] text-text-primary">
+                    <h1 className="text-[32px] font-bold tracking-[-1.5px] text-foreground-body">
                         Video Inventory
                     </h1>
-                    <p className="text-sm text-text-secondary mt-1">
+                    <p className="text-sm text-foreground-subtle mt-1">
                         Semantic search, browse, and upload your content library. Powered by TwelveLabs Marengo.
                     </p>
                 </div>
-                <button
+                <Button
+                    type="button"
+                    variant="primary"
+                    size="regular"
                     onClick={() => setShowUploadModal(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-text-primary text-white rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:bg-black hover:rounded-2xl"
+                    className="gap-1.5"
                 >
                     {plusIcon}
                     Upload Videos
-                </button>
+                </Button>
             </header>
             </ScrollFadeUp>
 
-            <ScrollFadeUp order={1}>
+            <ScrollFadeUp order={1} className="relative z-40">
             {/* ── Search + Genre Filter ─────────────────────────── */}
             <div className="px-8 pt-6 pb-2">
                 <div className="flex items-center justify-between gap-4">
                     {/* ── Gradient search bar ────────────────────────── */}
-                    <div ref={searchRef} className="relative flex-1 max-w-[600px]">
+                    <div ref={searchRef} className="relative z-40 flex-1 max-w-[600px]">
                         <div className={`gradient-search-wrapper ${searchFocused ? "active" : ""}`}>
                             <div className="gradient-search-inner flex items-center">
-                                <span className={`pl-4 transition-colors duration-200 ${searchFocused ? "text-text-primary" : "text-text-tertiary"}`}>
+                                <span className={`pl-4 transition-colors duration-200 ${searchFocused ? "text-foreground-body" : "text-foreground-muted"}`}>
                                     {isSearching
                                         ? <svg className="w-4 h-4 animate-spin" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="14 8" /></svg>
                                         : searchIcon}
@@ -165,12 +167,12 @@ export default function VideoInventoryPage() {
                                         if (!searchQuery) setShowPrompts(true);
                                     }}
                                     onBlur={() => setSearchFocused(false)}
-                                    className="w-full px-3 py-3 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                                    className="w-full px-3 py-3 bg-transparent text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none"
                                 />
                                 {searchQuery && (
                                     <button
                                         onClick={() => { setSearchQuery(""); setSearchResults(null); }}
-                                        className="pr-4 text-text-tertiary hover:text-text-primary transition-colors"
+                                        className="pr-4 text-foreground-muted hover:text-foreground-body transition-colors"
                                     >
                                         <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
                                             <path d="M9.5 2.5L2.5 9.5M2.5 2.5L9.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -182,13 +184,11 @@ export default function VideoInventoryPage() {
 
                         {/* Sample Prompts Dropdown */}
                         {showPrompts && searchFocused && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-border-light shadow-lg z-20 animate-fade-in overflow-hidden">
-                                <div className="px-4 py-2.5 border-b border-border-light flex items-center gap-2">
-                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[9px] font-semibold text-indigo-700 uppercase tracking-wider">
-                                        <svg viewBox="0 0 8 8" fill="none" className="w-2 h-2"><circle cx="4" cy="4" r="3" stroke="currentColor" strokeWidth="1"/></svg>
-                                        Marengo Semantic Search
-                                    </span>
-                                    <p className="text-[10px] text-text-tertiary">Try a sample prompt</p>
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-surface-white rounded-xl border border-border-secondary shadow-lg z-50 animate-fade-in overflow-hidden">
+                                <div className="px-4 py-2.5 border-b border-border-secondary">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">
+                                        Try a sample prompt
+                                    </p>
                                 </div>
                                 {samplePrompts.map((prompt, i) => (
                                     <button
@@ -198,9 +198,9 @@ export default function VideoInventoryPage() {
                                             setSearchQuery(prompt);
                                             setShowPrompts(false);
                                         }}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors flex items-center gap-2.5"
+                                        className="w-full text-left px-4 py-2.5 text-sm text-foreground-subtle hover:bg-gray-50 hover:text-foreground-body transition-colors flex items-center gap-2.5"
                                     >
-                                        <span className="text-text-tertiary shrink-0">{searchIcon}</span>
+                                        <span className="text-foreground-muted shrink-0">{searchIcon}</span>
                                         {prompt}
                                     </button>
                                 ))}
@@ -209,32 +209,32 @@ export default function VideoInventoryPage() {
                     </div>
 
                     {/* ── Genre Dropdown (far right) ────────────────── */}
-                    <div ref={genreRef} className="relative ml-auto">
+                    <div ref={genreRef} className="relative z-40 ml-auto">
                         <button
                             onClick={() => setGenreOpen(!genreOpen)}
                             className={`
                 flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium
                 transition-all duration-200 whitespace-nowrap
                 ${genreOpen
-                                    ? "border-gray-700 text-text-primary"
-                                    : "border-border-light text-text-secondary hover:border-border-default hover:text-text-primary"
+                                    ? "border-gray-700 text-foreground-body"
+                                    : "border-border-secondary text-foreground-subtle hover:border-border-primary hover:text-foreground-body"
                                 }
               `}
                         >
-                            <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5 text-text-tertiary">
+                            <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5 text-foreground-muted">
                                 <path d="M4 4V5H1V4H4ZM4 1H1V5L0.897461 4.99512C0.393331 4.94379 0 4.51768 0 4V1C0 0.447715 0.447715 0 1 0H4C4.55228 0 5 0.447715 5 1V4C5 4.55228 4.55228 5 4 5V1Z" fill="currentColor" />
                                 <path d="M4 11V12H1V11H4ZM4 8H1V12L0.897461 11.9951C0.393331 11.9438 0 11.5177 0 11V8C0 7.44772 0.447715 7 1 7H4C4.55228 7 5 7.44772 5 8V11C5 11.5523 4.55228 12 4 12V8Z" fill="currentColor" />
                                 <path d="M11 4V5H8V4H11ZM11 1H8V5L7.89746 4.99512C7.39333 4.94379 7 4.51768 7 4V1C7 0.447715 7.44772 0 8 0H11C11.5523 0 12 0.447715 12 1V4C12 4.55228 11.5523 5 11 5V1Z" fill="currentColor" />
                                 <path d="M11 11V12H8V11H11ZM11 8H8V12L7.89746 11.9951C7.39333 11.9438 7 11.5177 7 11V8C7 7.44772 7.44772 7 8 7H11C11.5523 7 12 7.44772 12 8V11C12 11.5523 11.5523 12 11 12V8Z" fill="currentColor" />
                             </svg>
                             {selectedGenre}
-                            <svg viewBox="0 0 12 12" fill="none" className={`w-3 h-3 text-text-tertiary transition-transform duration-200 ${genreOpen ? "rotate-180" : ""}`}>
+                            <svg viewBox="0 0 12 12" fill="none" className={`w-3 h-3 text-foreground-muted transition-transform duration-200 ${genreOpen ? "rotate-180" : ""}`}>
                                 <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
 
                         {genreOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-[200px] bg-white rounded-xl border border-border-light shadow-lg z-20 animate-fade-in overflow-hidden py-1">
+                            <div className="absolute top-full right-0 mt-2 w-[200px] bg-surface-white rounded-xl border border-border-secondary shadow-lg z-50 animate-fade-in overflow-hidden py-1">
                                 {genres.map((genre) => (
                                     <button
                                         key={genre}
@@ -246,8 +246,8 @@ export default function VideoInventoryPage() {
                       w-full text-left px-4 py-2 text-sm flex items-center gap-3
                       transition-colors duration-150
                       ${selectedGenre === genre
-                                                ? "text-text-primary bg-gray-50"
-                                                : "text-text-secondary hover:bg-gray-50 hover:text-text-primary"
+                                                ? "text-foreground-body bg-gray-50"
+                                                : "text-foreground-subtle hover:bg-gray-50 hover:text-foreground-body"
                                             }
                     `}
                                     >
@@ -327,21 +327,21 @@ export default function VideoInventoryPage() {
                 {searchQuery && (
                     <div className="mb-4 flex items-center gap-3">
                         {isSearching ? (
-                            <span className="flex items-center gap-2 text-xs text-text-tertiary">
+                            <span className="flex items-center gap-2 text-xs text-foreground-muted">
                                 <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="14 8" /></svg>
                                 Searching across all videos semantically…
                             </span>
                         ) : searchResults !== null ? (
-                            <span className="text-xs text-text-secondary">
-                                <span className="font-semibold text-text-primary">{filteredVideos.length}</span> video{filteredVideos.length !== 1 ? "s" : ""} matched &ldquo;{searchQuery}&rdquo;
+                            <span className="text-xs text-foreground-subtle">
+                                <span className="font-semibold text-foreground-body">{filteredVideos.length}</span> video{filteredVideos.length !== 1 ? "s" : ""} matched &ldquo;{searchQuery}&rdquo;
                                 {searchResults.length > 0 && (
-                                    <span className="ml-1.5 text-text-tertiary">— cards show matched timestamps</span>
+                                    <span className="ml-1.5 text-foreground-muted">— cards show matched timestamps</span>
                                 )}
                             </span>
                         ) : null}
                         <button
                             onClick={() => { setSearchQuery(""); setSearchResults(null); }}
-                            className="ml-auto text-xs text-text-tertiary hover:text-text-primary transition-colors"
+                            className="ml-auto text-xs text-foreground-muted hover:text-foreground-body transition-colors"
                         >
                             Clear search
                         </button>
@@ -351,9 +351,9 @@ export default function VideoInventoryPage() {
                 {videosLoading ? (
                     <div className="flex justify-center items-center py-20">
                         <div className="flex gap-2">
-                            <div className="w-2 h-2 rounded-full bg-text-tertiary animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                            <div className="w-2 h-2 rounded-full bg-text-tertiary animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                            <div className="w-2 h-2 rounded-full bg-text-tertiary animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-foreground-muted animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-foreground-muted animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-foreground-muted animate-bounce" style={{ animationDelay: '300ms' }}></div>
                         </div>
                     </div>
                 ) : readyVideos.length === 0 && processingVideos.length === 0 ? (
@@ -367,33 +367,36 @@ export default function VideoInventoryPage() {
                                 <path fillRule="evenodd" clipRule="evenodd" d="M0 1H63.6997L0 154.2V1Z" fill="#F8B122" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-text-primary mb-2 tracking-tight">Your Video Inventory is Empty</h3>
-                        <p className="text-sm text-text-secondary max-w-md mx-auto mb-6">
+                        <h3 className="text-xl font-semibold text-foreground-body mb-2 tracking-tight">Your Video Inventory is Empty</h3>
+                        <p className="text-sm text-foreground-subtle max-w-md mx-auto mb-6">
                             Upload your video content to have TwelveLabs automatically analyze, index, and prepare it for highly-relevant contextual ad insertion.
                         </p>
-                        <button
+                        <Button
+                            type="button"
+                            variant="primary"
+                            size="md"
                             onClick={() => setShowUploadModal(true)}
-                            className="flex items-center gap-1.5 px-6 py-2.5 bg-text-primary text-white rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:bg-black hover:rounded-2xl"
+                            className="gap-1.5"
                         >
                             {plusIcon}
                             Upload First Video
-                        </button>
+                        </Button>
                     </div>
                 ) : filteredVideos.length === 0 && searchQuery ? (
-                    <div className="flex flex-col items-center justify-center py-16 rounded-2xl border border-border-light">
+                    <div className="flex flex-col items-center justify-center py-16 rounded-2xl border border-border-secondary">
                         <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mb-3">
                             {searchIcon}
                         </div>
-                        <p className="text-sm font-medium text-text-primary mb-1">No videos matched your search</p>
-                        <p className="text-sm text-text-tertiary mb-4">Try rephrasing your query or describe different visual elements.</p>
-                        <button onClick={() => { setSearchQuery(""); setSearchResults(null); }} className="text-sm text-text-secondary hover:text-text-primary font-medium transition-colors">
+                        <p className="text-sm font-medium text-foreground-body mb-1">No videos matched your search</p>
+                        <p className="text-sm text-foreground-muted mb-4">Try rephrasing your query or describe different visual elements.</p>
+                        <button onClick={() => { setSearchQuery(""); setSearchResults(null); }} className="text-sm text-foreground-subtle hover:text-foreground-body font-medium transition-colors">
                             Clear search
                         </button>
                     </div>
                 ) : filteredVideos.length === 0 ? (
                     <div className="py-16 text-center">
-                        <p className="text-text-secondary mb-2 border border-border-light rounded-2xl max-w-md mx-auto py-3 bg-gray-50 text-sm">No videos match your criteria.</p>
-                        <button onClick={() => { setSearchQuery(""); setSelectedGenre("All Genres"); }} className="text-mb-pink-dark text-sm font-semibold hover:underline">
+                        <p className="text-foreground-subtle mb-2 border border-border-secondary rounded-2xl max-w-md mx-auto py-3 bg-gray-50 text-sm">No videos match your criteria.</p>
+                        <button onClick={() => { setSearchQuery(""); setSelectedGenre("All Genres"); }} className="text-tl-master-brand-dark-pink text-sm font-semibold hover:underline">
                             Clear filters
                         </button>
                     </div>
@@ -413,17 +416,17 @@ export default function VideoInventoryPage() {
                                     />
                                     {match && (
                                         <div className="mt-1.5 flex items-center gap-1.5 px-0.5">
-                                            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 text-mb-green-dark shrink-0">
+                                            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 text-tl-master-brand-dark-green shrink-0">
                                                 <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
                                             </svg>
-                                            <span className="text-[10px] text-text-tertiary">
+                                            <span className="text-[10px] text-foreground-muted">
                                                 Match at{" "}
-                                                <span className="text-text-secondary font-medium">
+                                                <span className="text-foreground-subtle font-medium">
                                                     {Math.floor(match.start / 60)}:{String(Math.floor(match.start % 60)).padStart(2, "0")}
                                                     {" "}–{" "}
                                                     {Math.floor(match.end / 60)}:{String(Math.floor(match.end % 60)).padStart(2, "0")}
                                                 </span>
-                                                <span className="ml-1 capitalize text-text-tertiary">· {match.confidence}</span>
+                                                <span className="ml-1 capitalize text-foreground-muted">· {match.confidence}</span>
                                             </span>
                                         </div>
                                     )}

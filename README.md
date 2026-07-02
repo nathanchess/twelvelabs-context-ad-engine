@@ -80,6 +80,9 @@ Open [http://localhost:3000](http://localhost:3000) to see the dashboard.
 Create `.env.local` with the following keys:
 
 ```env
+# GitHub Packages — required for @twelvelabs-io/react (npm install + Vercel deploy)
+REGISTRY_TOKEN=ghp_...
+
 # ── TwelveLabs ──────────────────────────────────────────────
 # Your TwelveLabs API key — get it at https://playground.twelvelabs.io/
 TL_API_KEY=tlk_...
@@ -166,7 +169,7 @@ This app uses **`text-embedding-3-small`** only (no chat completions required fo
 src/app/
 ├── page.tsx                          # Overview landing page
 ├── layout.tsx                        # Root layout (nav, fonts)
-├── globals.css                       # Tailwind v4 + Strand design tokens
+├── globals.css                       # Tailwind v4 + @twelvelabs-io/react tokens
 │
 ├── video-inventory/
 │   ├── page.tsx                      # Video library with semantic search
@@ -248,7 +251,7 @@ The cosine similarity is stretched from the expected raw range `[0.35, 0.75]` to
 | Frontend | Next.js 15 + React 19 (App Router) |
 | Video AI | TwelveLabs API (Marengo + Pegasus) |
 | Ad Engine | TypeScript pure functions + `useMemo` |
-| Styling | Tailwind CSS v4 + Strand Design System |
+| Styling | Tailwind CSS v4 + @twelvelabs-io/react |
 | Storage | Vercel Blob (analysis + embedding cache) |
 | Streaming | HLS.js + CloudFront CDN |
 | Data Platform | Databricks Delta Lake + Mosaic AI Vector Search |
@@ -327,15 +330,14 @@ npm run build
 npm start
 ```
 
-Or deploy to Vercel — all environment variables (including `DATABRICKS_*`) need to be set in the Vercel project settings.
+Or deploy to Vercel — set all environment variables in the Vercel project settings, including `REGISTRY_TOKEN` (GitHub Packages PAT with `read:packages` for `@twelvelabs-io/react`) and `DATABRICKS_*` if used.
 
 ---
 
 ## Contributing
 
-1. Do not modify `strand/` — it's the canonical TwelveLabs design system
-2. All new UI components should follow `docs/STRANDS_AGENT_RULES.md`
-3. Run `npm run build` before committing to catch TypeScript errors
+1. All new UI components should use `@twelvelabs-io/react` components and design tokens
+2. Run `npm run build` before committing to catch TypeScript errors
 
 ---
 

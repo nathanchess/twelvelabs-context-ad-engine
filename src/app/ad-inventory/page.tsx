@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { Button, Chip } from "@twelvelabs-io/react";
 import Link from "next/link";
 import AddCategoryModal from "../components/AddCategoryModal";
 import ScrollFadeUp from "../components/ScrollFadeUp";
@@ -99,20 +100,20 @@ export default function AdInventoryPage() {
             <ScrollProgressBar />
 
             <ScrollFadeUp order={0}>
-            <header className="border-b border-border-light px-8 py-6">
-                <h1 className="text-[32px] font-bold tracking-[-1.5px] text-text-primary">Ad Inventory</h1>
-                <p className="text-sm text-text-secondary mt-1">Manage and match ads to your video content.</p>
+            <header className="border-b border-border-secondary px-8 py-6">
+                <h1 className="text-[32px] font-bold tracking-[-1.5px] text-foreground-body">Ad Inventory</h1>
+                <p className="text-sm text-foreground-subtle mt-1">Manage and match ads to your video content.</p>
             </header>
             </ScrollFadeUp>
 
-            <ScrollFadeUp order={1}>
+            <ScrollFadeUp order={1} className="relative z-40">
             {/* ── Search Bar + Add Category ─────────────────────── */}
             <div className="px-8 pt-6 pb-2">
                 <div className="flex items-center justify-between">
                     <div className="flex-1 max-w-[560px]">
                         <div className={`gradient-search-wrapper ${searchFocused ? "active" : ""}`}>
                             <div className="gradient-search-inner flex items-center">
-                                <span className={`pl-4 transition-colors duration-200 ${searchFocused ? "text-text-primary" : "text-text-tertiary"}`}>
+                                <span className={`pl-4 transition-colors duration-200 ${searchFocused ? "text-foreground-body" : "text-foreground-muted"}`}>
                                     {searchIcon}
                                 </span>
                                 <input
@@ -122,10 +123,10 @@ export default function AdInventoryPage() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onFocus={() => setSearchFocused(true)}
                                     onBlur={() => setSearchFocused(false)}
-                                    className="w-full px-3 py-3 bg-transparent text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                                    className="w-full px-3 py-3 bg-transparent text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none"
                                 />
                                 {searchQuery && (
-                                    <button onClick={() => setSearchQuery("")} className="pr-4 text-text-tertiary hover:text-text-primary transition-colors">
+                                    <button onClick={() => setSearchQuery("")} className="pr-4 text-foreground-muted hover:text-foreground-body transition-colors">
                                         <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M9.5 2.5L2.5 9.5M2.5 2.5L9.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
                                     </button>
                                 )}
@@ -134,7 +135,7 @@ export default function AdInventoryPage() {
                     </div>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border-light text-sm font-medium text-text-primary hover:border-border-default hover:bg-gray-50 transition-all duration-200"
+                        className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border-secondary text-sm font-medium text-foreground-body hover:border-border-primary hover:bg-gray-50 transition-all duration-200"
                     >
                         <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
                         Add Category
@@ -158,7 +159,7 @@ export default function AdInventoryPage() {
                                 <div key={ad.id} className="relative group">
                                     <Link
                                         href={`/ad-inventory/${ad.slug}`}
-                                        className="block relative rounded-2xl border border-border-light overflow-hidden hover-lift cursor-pointer transition-all duration-200"
+                                        className="block relative rounded-2xl border border-border-secondary overflow-hidden hover-lift cursor-pointer transition-all duration-200"
                                     >
                                         {/* Top: Banner Image */}
                                         <div className="h-36 bg-gray-50 relative overflow-hidden">
@@ -169,27 +170,35 @@ export default function AdInventoryPage() {
 
                                         {/* Content */}
                                         <div className="p-5 pt-3">
-                                            <h3 className="text-base font-semibold text-text-primary mb-3">{ad.category}</h3>
+                                            <h3 className="text-base font-semibold text-foreground-body mb-3">{ad.category}</h3>
 
                                             <div className="mb-2.5">
-                                                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-1.5">Target contexts</p>
+                                                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-1.5">Target contexts</p>
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     {ad.targetContexts.map((ctx) => (
-                                                        <span key={ctx} className="px-2.5 py-1 rounded-full bg-mb-green-light/40 text-[11px] font-medium text-mb-green-dark">{ctx}</span>
+                                                        <Chip key={ctx} variant="success" size="sm">
+                                                            {ctx}
+                                                        </Chip>
                                                     ))}
                                                 </div>
                                             </div>
 
                                             <div>
-                                                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-text-tertiary mb-1.5">Exclusions</p>
+                                                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted mb-1.5">Exclusions</p>
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     {ad.exclusions.map((exc) => (
-                                                        <span key={exc} className="px-2.5 py-1 rounded-full bg-mb-pink-light/40 text-[11px] font-medium text-mb-pink-dark">{exc}</span>
+                                                        <Chip
+                                                            key={exc}
+                                                            size="sm"
+                                                            className="border-tl-master-brand-light-pink bg-tl-master-brand-light-pink text-tl-master-brand-dark-pink"
+                                                        >
+                                                            {exc}
+                                                        </Chip>
                                                     ))}
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-3 text-text-tertiary mt-3 pt-3 border-t border-border-light">
+                                            <div className="flex items-center gap-3 text-foreground-muted mt-3 pt-3 border-t border-border-secondary">
                                                 <span className="flex items-center gap-1 text-[11px]">
                                                     <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path fillRule="evenodd" clipRule="evenodd" d="M5.55217 4.79V7.21L7.265 6L5.55217 4.79ZM4.5 4.315C4.5 3.657 5.235 3.271 5.77 3.649L8.156 5.334C8.615 5.657 8.615 6.343 8.156 6.667L5.77 8.352C5.235 8.729 4.5 8.343 4.5 7.685V4.315Z" fill="currentColor" /></svg>
                                                     {dataLoading ? "…" : videoCount}
@@ -207,7 +216,7 @@ export default function AdInventoryPage() {
                                         <a
                                             href={`/ad-inventory/${ad.slug}`}
                                             onClick={(e) => e.stopPropagation()}
-                                            className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary bg-gray-50/80 hover:bg-gray-100 transition-all duration-200"
+                                            className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground-muted hover:text-foreground-body bg-gray-50/80 hover:bg-gray-100 transition-all duration-200"
                                             title="View Videos"
                                         >
                                             <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
@@ -220,12 +229,12 @@ export default function AdInventoryPage() {
                         })}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-border-light">
+                    <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-border-secondary">
                         <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-                            <span className="text-text-tertiary">{searchIcon}</span>
+                            <span className="text-foreground-muted">{searchIcon}</span>
                         </div>
-                        <p className="text-sm font-medium text-text-primary mb-1">No matching ads</p>
-                        <p className="text-sm text-text-tertiary">Try adjusting your search query.</p>
+                        <p className="text-sm font-medium text-foreground-body mb-1">No matching ads</p>
+                        <p className="text-sm text-foreground-muted">Try adjusting your search query.</p>
                     </div>
                 )}
             </div>

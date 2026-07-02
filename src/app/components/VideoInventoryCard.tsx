@@ -99,26 +99,26 @@ export default function VideoInventoryCard({
                                 if (e.key === "Enter") saveRename();
                                 if (e.key === "Escape") cancelRename();
                             }}
-                            className="flex-1 min-w-0 px-2 py-1 text-[11px] text-text-primary border border-border-light rounded-lg focus:outline-none focus:border-gray-400"
+                            className="flex-1 min-w-0 px-2 py-1 text-[11px] text-foreground-body border border-border-secondary rounded-lg focus:outline-none focus:border-gray-400"
                         />
                         <button
                             type="button"
                             onClick={saveRename}
-                            className="shrink-0 px-2 py-1 text-[10px] font-medium text-white bg-text-primary rounded-lg hover:bg-black transition-colors"
+                            className="shrink-0 px-2 py-1 text-[10px] font-medium text-white bg-surface-primary rounded-lg hover:bg-black transition-colors"
                         >
                             Save
                         </button>
                         <button
                             type="button"
                             onClick={cancelRename}
-                            className="shrink-0 px-2 py-1 text-[10px] font-medium text-text-secondary hover:text-text-primary transition-colors"
+                            className="shrink-0 px-2 py-1 text-[10px] font-medium text-foreground-subtle hover:text-foreground-body transition-colors"
                         >
                             Cancel
                         </button>
                     </div>
                 ) : (
                     <>
-                        <p className="flex-1 min-w-0 text-[11px] text-text-primary font-medium truncate" title={displayName}>
+                        <p className="flex-1 min-w-0 text-[11px] text-foreground-body font-medium truncate" title={displayName}>
                             {displayName}
                         </p>
                         <div ref={menuRef} className="relative shrink-0 z-20">
@@ -129,7 +129,7 @@ export default function VideoInventoryCard({
                                     e.stopPropagation();
                                     setMenuOpen((o) => !o);
                                 }}
-                                className="p-0.5 rounded-md text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors"
+                                className="p-0.5 rounded-md text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors"
                                 aria-label="Video options"
                                 aria-expanded={menuOpen}
                             >
@@ -138,7 +138,7 @@ export default function VideoInventoryCard({
                             {menuOpen && (
                                 <div
                                     role="menu"
-                                    className="absolute right-0 top-full mt-1 w-[152px] bg-white rounded-xl border border-border-light shadow-lg z-50 overflow-hidden p-1 animate-fade-in"
+                                    className="absolute right-0 top-full mt-1 w-[152px] bg-white rounded-xl border border-border-secondary shadow-lg z-50 overflow-hidden p-1 animate-fade-in"
                                 >
                                     <button
                                         type="button"
@@ -147,7 +147,7 @@ export default function VideoInventoryCard({
                                             startRename();
                                         }}
                                         role="menuitem"
-                                        className="w-full flex items-center gap-2 px-2.5 py-2 text-sm text-text-secondary rounded-lg hover:bg-gray-50 hover:text-text-primary transition-colors"
+                                        className="w-full flex items-center gap-2 px-2.5 py-2 text-sm text-foreground-subtle rounded-lg hover:bg-gray-50 hover:text-foreground-body transition-colors"
                                     >
                                         <Pencil className="w-4 h-4 shrink-0" strokeWidth={1.5} aria-hidden />
                                         Rename

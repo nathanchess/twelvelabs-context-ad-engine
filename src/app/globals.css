@@ -1,167 +1,37 @@
 @import "tailwindcss";
+@import "@twelvelabs-io/react/tokens.css";
+@import "@twelvelabs-io/react/theme.css";
 
-/* ── Tailwind v4 Theme — Strand Tokens ───────────────────────────────── */
-@theme inline {
-  /* Brand palette */
-  --color-brand-green: #00FF00;
-  --color-brand-charcoal: #1D1C1B;
-  --color-brand-white: #F4F3F3;
-  --color-brand-grey: #D3D1CF;
+@layer base {
+  html {
+    @apply font-tl-sans antialiased;
+  }
 
-  /* Masterbrand */
-  --color-mb-green: #60E21B;
-  --color-mb-green-dark: #30710E;
-  --color-mb-green-light: #BFF3A4;
-  --color-mb-orange: #FABA17;
-  --color-mb-orange-dark: #7D5D0C;
-  --color-mb-orange-light: #FDE3A2;
-  --color-mb-peach: #FFB592;
-  --color-mb-peach-dark: #805B49;
-  --color-mb-peach-light: #FFD3BE;
-  --color-mb-pink: #FFB0CD;
-  --color-mb-pink-dark: #805867;
-  --color-mb-pink-light: #FFDFEB;
+  body {
+    @apply bg-surface-body text-foreground-body;
+  }
 
-  /* Gray ramp */
-  --color-gray-50: #F4F3F3;
-  --color-gray-100: #ECECEC;
-  --color-gray-200: #E2E2E2;
-  --color-gray-300: #D3D1CF;
-  --color-gray-400: #BDBCBB;
-  --color-gray-500: #8F8984;
-  --color-gray-600: #46423F;
-  --color-gray-700: #1D1C1B;
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+  }
 
-  /* Semantic UI — light mode defaults (overridden by .dark) */
-  --color-background: var(--strand-background, #F4F3F3);
-  --color-surface: var(--strand-surface, #FFFFFF);
-  --color-card: var(--strand-card, #ECECEC);
-  --color-text-primary: var(--strand-text-primary, #1D1C1B);
-  --color-text-secondary: var(--strand-text-secondary, #6B6966);
-  --color-text-tertiary: var(--strand-text-tertiary, #9B9895);
-  --color-text-inverse: var(--strand-text-inverse, #FFFFFF);
-  --color-border-default: var(--strand-border, #D3D1CF);
-  --color-border-light: var(--strand-border-light, #E8E7E5);
-  --color-accent: var(--strand-accent, #00DC82);
-  --color-accent-hover: var(--strand-accent-hover, #00B86E);
-  --color-accent-light: var(--strand-accent-light, #E8F5E9);
-  --color-highlight: #60E21B;
-  --color-error: #E22622;
-  --color-warning: #FABA17;
-  --color-success: #60E21B;
-  --color-info: #6CD5FD;
-  --color-destructive: #E22622;
+  a img,
+  button img {
+    pointer-events: auto;
+  }
 
-  /* Product line colors */
-  --color-product-search: #F6AFFF;
-  --color-product-search-dark: #7B5880;
-  --color-product-search-light: #FBDFFF;
-  --color-product-generate: #FABA17;
-  --color-product-generate-dark: #7D5D0C;
-  --color-product-generate-light: #FDE3A2;
-  --color-product-embed: #6CD5FD;
-  --color-product-embed-dark: #366B7F;
-  --color-product-embed-light: #C4EEFE;
+  button,
+  [role="button"],
+  input[type="range"],
+  select {
+    cursor: pointer;
+  }
 
-  /* Font families */
-  --font-brand: 'Milling Duplex 1mm', 'Noto Sans', Helvetica, Arial, sans-serif;
-  --font-brand-bold: 'Milling Triplex 1mm', 'Milling Duplex 1mm', 'Noto Sans', Helvetica, Arial, sans-serif;
-  --font-system: 'Noto Sans', Helvetica, Arial, sans-serif;
-  --font-geist: 'Geist', 'Inter', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-
-  /* Spacing (4px grid) */
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-5: 20px;
-  --spacing-6: 24px;
-  --spacing-8: 32px;
-  --spacing-10: 40px;
-  --spacing-12: 48px;
-  --spacing-16: 64px;
-
-  /* Border radii */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ── Light Mode (default) ────────────────────────────────────────────── */
-:root {
-  --strand-background: #F4F3F3;
-  --strand-surface: #FFFFFF;
-  --strand-card: #ECECEC;
-  --strand-text-primary: #1D1C1B;
-  --strand-text-secondary: #6B6966;
-  --strand-text-tertiary: #9B9895;
-  --strand-text-inverse: #FFFFFF;
-  --strand-border: #D3D1CF;
-  --strand-border-light: #E8E7E5;
-  --strand-accent: #00DC82;
-  --strand-accent-hover: #00B86E;
-  --strand-accent-light: #E8F5E9;
-}
-
-/* ── Dark Mode ───────────────────────────────────────────────────────── */
-.dark {
-  --strand-background: #1D1C1B;
-  --strand-surface: #2A2928;
-  --strand-card: #333231;
-  --strand-text-primary: #F4F3F3;
-  --strand-text-secondary: #9B9895;
-  --strand-text-tertiary: #6B6966;
-  --strand-text-inverse: #1D1C1B;
-  --strand-border: #45423F;
-  --strand-border-light: #333231;
-  --strand-accent: #00DC82;
-  --strand-accent-hover: #00B86E;
-  --strand-accent-light: #1A3D2A;
-}
-
-/* ── Base Styles ─────────────────────────────────────────────────────── */
-body {
-  background: #FFFFFF;
-  color: var(--strand-text-primary);
-  font-family: var(--font-system);
-}
-
-/* ── Non-draggable images ────────────────────────────────────────────── */
-img {
-  -webkit-user-drag: none;
-  user-select: none;
-  pointer-events: none;
-}
-
-a img,
-button img {
-  pointer-events: auto;
-}
-
-/* ── Masterbrand Gradient ────────────────────────────────────────────── */
-:root {
-  --strand-gradient-brand: linear-gradient(90deg, #60E21B, #FABA17, #FFB0CD);
-  --strand-gradient-slide: linear-gradient(90deg, #16DF84, #00D67E);
-}
-
-.bg-gradient-brand {
-  background: var(--strand-gradient-brand);
-}
-
-.text-gradient-brand {
-  background: var(--strand-gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 /* ── Hover utilities ─────────────────────────────────────────────────── */
@@ -171,7 +41,7 @@ button img {
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--tl-color-foreground-body) 6%, transparent);
 }
 
 .hover-fade {
@@ -180,11 +50,6 @@ button img {
 
 .hover-fade:hover {
   opacity: 0.8;
-}
-
-/* ── Sidebar layout offset ──────────────────────────────────────────── */
-.sidebar-content {
-  margin-left: 240px;
 }
 
 /* ── Animations ─────────────────────────────────────────────────────── */
@@ -196,18 +61,6 @@ button img {
   to {
     opacity: 1;
   }
-}
-
-/* All interactive controls get pointer cursor globally */
-button,
-[role="button"],
-input[type="range"],
-select {
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
 }
 
 @keyframes modalIn {
@@ -235,24 +88,29 @@ button:disabled {
   position: relative;
   border-radius: 12px;
   padding: 1.5px;
-  background: var(--strand-border-light);
+  background: var(--tl-border-secondary);
   transition: all 300ms ease-out;
 }
 
 .gradient-search-wrapper.active {
-  background: var(--strand-gradient-brand);
+  background: linear-gradient(
+    90deg,
+    var(--tl-color-master-brand-green),
+    var(--tl-color-master-brand-orange),
+    var(--tl-color-master-brand-pink)
+  );
   box-shadow:
-    0 0 12px rgba(96, 226, 27, 0.15),
-    0 0 24px rgba(250, 186, 23, 0.08),
-    0 0 4px rgba(255, 176, 205, 0.1);
+    0 0 12px color-mix(in srgb, var(--tl-color-master-brand-green) 15%, transparent),
+    0 0 24px color-mix(in srgb, var(--tl-color-master-brand-orange) 8%, transparent),
+    0 0 4px color-mix(in srgb, var(--tl-color-master-brand-pink) 10%, transparent);
 }
 
 .gradient-search-wrapper:not(.active):hover {
-  background: var(--strand-border);
+  background: var(--tl-border-primary);
 }
 
 .gradient-search-inner {
-  background: #FFFFFF;
+  background: var(--tl-surface-white);
   border-radius: 10.5px;
   width: 100%;
 }

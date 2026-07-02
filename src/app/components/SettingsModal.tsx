@@ -25,11 +25,11 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                 className="relative bg-white rounded-2xl shadow-lg w-full max-w-[480px] mx-4 animate-modal-in"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between px-6 py-5 border-b border-border-light">
-                    <h2 className="text-lg font-semibold text-text-primary">Configuration</h2>
+                <div className="flex items-center justify-between px-6 py-5 border-b border-border-secondary">
+                    <h2 className="text-lg font-semibold text-foreground-body">Configuration</h2>
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-md text-text-tertiary hover:text-text-primary hover:bg-gray-50 transition-colors duration-200"
+                        className="p-1.5 rounded-md text-foreground-muted hover:text-foreground-body hover:bg-gray-50 transition-colors duration-200"
                         aria-label="Close settings"
                     >
                         <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
@@ -39,25 +39,25 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                     </button>
                 </div>
 
-                <div className="px-6 py-6 space-y-4 text-sm text-text-secondary leading-relaxed">
+                <div className="px-6 py-6 space-y-4 text-sm text-foreground-subtle leading-relaxed">
                     <p>
                         API keys and integration credentials for this deployment are{" "}
-                        <span className="font-medium text-text-primary">managed directly by TwelveLabs internal team members</span>.
+                        <span className="font-medium text-foreground-body">managed directly by TwelveLabs internal team members</span>.
                         They are not configurable through this interface.
                     </p>
                     <p>
                         If you need to run or configure the app yourself (for example a local deployment), use the
                         source repository: environment variables such as{" "}
-                        <span className="font-mono text-text-primary">TL_API_KEY</span>,{" "}
-                        <span className="font-mono text-text-primary">BLOB_READ_WRITE_TOKEN</span>, and optional{" "}
-                        <span className="font-mono text-text-primary">DATABRICKS_*</span> are documented there for
+                        <span className="font-tl-mono text-foreground-body">TL_API_KEY</span>,{" "}
+                        <span className="font-tl-mono text-foreground-body">BLOB_READ_WRITE_TOKEN</span>, and optional{" "}
+                        <span className="font-tl-mono text-foreground-body">DATABRICKS_*</span> are documented there for
                         analyze, search, video listing, generation, Vercel Blob caching, and the ad metadata SQL export.
                     </p>
                     <a
                         href={DEFAULT_SOURCE_REPO}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-border-light bg-gray-50 text-sm font-medium text-text-primary hover:bg-gray-100 hover:border-border-default transition-colors"
+                        className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-border-secondary bg-gray-50 text-sm font-medium text-foreground-body hover:bg-gray-100 hover:border-border-primary transition-colors"
                     >
                         <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden>
                             <path
@@ -67,13 +67,13 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
                         </svg>
                         GitHub — source &amp; local setup
                     </a>
-                    <p className="text-xs text-text-tertiary">
+                    <p className="text-xs text-foreground-muted">
                         Keys are never stored in the browser; exposing them in a deployed UI would be unsafe for a
                         public demo.
                     </p>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-secondary">
                     <button
                         type="button"
                         onClick={onClose}

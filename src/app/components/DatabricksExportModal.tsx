@@ -144,21 +144,21 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
       aria-modal="true"
       aria-labelledby="databricks-export-title"
     >
-      <div className="w-full max-w-[720px] max-h-[90vh] flex flex-col rounded-2xl border border-border-light bg-white shadow-2xl overflow-hidden">
-        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-border-light shrink-0">
+      <div className="w-full max-w-[720px] max-h-[90vh] flex flex-col rounded-2xl border border-border-secondary bg-white shadow-2xl overflow-hidden">
+        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-border-secondary shrink-0">
           <div>
-            <h2 id="databricks-export-title" className="text-base font-semibold text-text-primary">
+            <h2 id="databricks-export-title" className="text-base font-semibold text-foreground-body">
               Export to Databricks
             </h2>
-            <p className="text-xs text-text-tertiary mt-1 leading-relaxed">
+            <p className="text-xs text-foreground-muted mt-1 leading-relaxed">
               Delta table{" "}
-              <span className="font-mono text-text-secondary">{displayTablePath}</span>
+              <span className="font-tl-mono text-foreground-subtle">{displayTablePath}</span>
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-gray-100 transition-colors cursor-pointer"
+            className="p-2 rounded-lg text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -166,48 +166,48 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
         </div>
 
         <div className="px-6 py-4 overflow-y-auto flex-1 space-y-5">
-          <p className="text-xs text-text-secondary leading-relaxed">
-            Unity Catalog–only workspaces cannot use <span className="font-mono text-[11px]">hive_metastore</span>
+          <p className="text-xs text-foreground-subtle leading-relaxed">
+            Unity Catalog–only workspaces cannot use <span className="font-tl-mono text-[11px]">hive_metastore</span>
             . Leave catalog empty to use your SQL warehouse&apos;s{" "}
-            <span className="font-semibold text-text-primary">default catalog</span>, and set schema to one you can
+            <span className="font-semibold text-foreground-body">default catalog</span>, and set schema to one you can
             write to (see Data Explorer). Rows: {rows.length}. Marengo vectors are in{" "}
-            <span className="font-mono text-[11px]">marengo_embedding_json</span> (JSON float array) for Vector Search.
+            <span className="font-tl-mono text-[11px]">marengo_embedding_json</span> (JSON float array) for Vector Search.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider">
                 Catalog
               </span>
               <input
                 type="text"
                 value={catalog}
                 onChange={(e) => setCatalog(e.target.value)}
-                className="mt-1.5 w-full px-3 py-2 rounded-lg border border-border-light bg-white font-mono text-xs text-text-primary placeholder:text-text-tertiary"
+                className="mt-1.5 w-full px-3 py-2 rounded-lg border border-border-secondary bg-white font-tl-mono text-xs text-foreground-body placeholder:text-foreground-muted"
                 placeholder="Empty = default UC catalog"
                 autoComplete="off"
                 spellCheck={false}
               />
             </label>
             <label className="block">
-              <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-foreground-muted uppercase tracking-wider">
                 Schema
               </span>
               <input
                 type="text"
                 value={schema}
                 onChange={(e) => setSchema(e.target.value)}
-                className="mt-1.5 w-full px-3 py-2 rounded-lg border border-border-light bg-white font-mono text-xs text-text-primary placeholder:text-text-tertiary"
+                className="mt-1.5 w-full px-3 py-2 rounded-lg border border-border-secondary bg-white font-tl-mono text-xs text-foreground-body placeholder:text-foreground-muted"
                 placeholder="default"
                 autoComplete="off"
                 spellCheck={false}
               />
             </label>
           </div>
-          <p className="text-[11px] text-text-tertiary leading-relaxed -mt-1">
-            Optional: set <span className="font-mono">Catalog</span> to a UC name from Data Explorer for a
+          <p className="text-[11px] text-foreground-muted leading-relaxed -mt-1">
+            Optional: set <span className="font-tl-mono">Catalog</span> to a UC name from Data Explorer for a
             three-part name. In Compute → your SQL warehouse → Configuration, confirm{" "}
-            <span className="font-semibold text-text-secondary">Default catalog</span> / schema if exports fail.
+            <span className="font-semibold text-foreground-subtle">Default catalog</span> / schema if exports fail.
           </p>
 
           <OverviewCodeBlock
@@ -216,8 +216,8 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
             code={lastServerSql && runPhase === "complete" ? lastServerSql : sqlPreview}
           />
 
-          <div className="rounded-xl border border-border-light bg-gray-50/80 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary mb-3">
+          <div className="rounded-xl border border-border-secondary bg-gray-50/80 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted mb-3">
               Run SQL statement
             </p>
             <ul className="space-y-2.5">
@@ -235,26 +235,26 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
                 return (
                   <li key={step.key} className="flex items-center gap-2.5 text-xs">
                     {done ? (
-                      <Check className="w-4 h-4 text-mb-green-dark shrink-0" strokeWidth={2.5} />
+                      <Check className="w-4 h-4 text-tl-master-brand-dark-green shrink-0" strokeWidth={2.5} />
                     ) : failedHere ? (
                       <span
                         className="w-4 h-4 rounded-full border-2 border-red-500 shrink-0 inline-block"
                         aria-hidden
                       />
                     ) : active ? (
-                      <Loader2 className="w-4 h-4 text-text-primary shrink-0 animate-spin" />
+                      <Loader2 className="w-4 h-4 text-foreground-body shrink-0 animate-spin" />
                     ) : (
                       <Circle className="w-4 h-4 text-border-light shrink-0" strokeWidth={1.5} />
                     )}
                     <span
                       className={
                         done
-                          ? "text-text-secondary"
+                          ? "text-foreground-subtle"
                           : active || failedHere
                             ? failedHere
                               ? "font-medium text-red-600"
-                              : "font-medium text-text-primary"
-                            : "text-text-tertiary"
+                              : "font-medium text-foreground-body"
+                            : "text-foreground-muted"
                       }
                     >
                       {step.label}
@@ -264,7 +264,7 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
               })}
               <li className="flex items-center gap-2.5 text-xs">
                 {runPhase === "complete" ? (
-                  <Check className="w-4 h-4 text-mb-green-dark shrink-0" strokeWidth={2.5} />
+                  <Check className="w-4 h-4 text-tl-master-brand-dark-green shrink-0" strokeWidth={2.5} />
                 ) : runPhase === "error" ? (
                   <span className="w-4 h-4 rounded-full bg-red-500 shrink-0" aria-hidden />
                 ) : (
@@ -273,10 +273,10 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
                 <span
                   className={
                     runPhase === "complete"
-                      ? "font-medium text-mb-green-dark"
+                      ? "font-medium text-tl-master-brand-dark-green"
                       : runPhase === "error"
                         ? "font-medium text-red-600"
-                        : "text-text-tertiary"
+                        : "text-foreground-muted"
                   }
                 >
                   {runPhase === "complete"
@@ -288,26 +288,26 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
               </li>
             </ul>
             {runError && (
-              <div className="mt-3 border-t border-border-light pt-3 space-y-2">
+              <div className="mt-3 border-t border-border-secondary pt-3 space-y-2">
                 <p className="text-xs text-red-600 leading-relaxed whitespace-pre-wrap">{runError}</p>
                 {runError.includes("UC_HIVE_METASTORE_DISABLED") ||
                 runError.includes("Hive Metastore") ? (
-                  <p className="text-xs text-text-secondary leading-relaxed">
+                  <p className="text-xs text-foreground-subtle leading-relaxed">
                     Your workspace has legacy Hive Metastore access off. You do not need to change
-                    permissions for that. Clear <span className="font-mono">Catalog</span> above (default) so
+                    permissions for that. Clear <span className="font-tl-mono">Catalog</span> above (default) so
                     SQL uses your warehouse&apos;s Unity Catalog default, or enter your UC catalog name from
                     Data Explorer. Enabling Hive Metastore would require an admin and federation; using UC is
                     the normal path.
                   </p>
                 ) : null}
                 {runError.includes("SCHEMA_NOT_FOUND") || runError.includes("cannot be found") ? (
-                  <p className="text-xs text-text-secondary leading-relaxed">
+                  <p className="text-xs text-foreground-subtle leading-relaxed">
                     Pick a catalog and schema that exist under Unity Catalog in Data Explorer, or leave
-                    catalog empty and set <span className="font-mono">Schema</span> to a schema your user can
+                    catalog empty and set <span className="font-tl-mono">Schema</span> to a schema your user can
                     write to. If you then see a permission error, an admin must grant{" "}
-                    <span className="font-mono text-text-primary">USE CATALOG</span>,{" "}
-                    <span className="font-mono text-text-primary">USE SCHEMA</span>, and{" "}
-                    <span className="font-mono text-text-primary">CREATE TABLE</span> on that schema.
+                    <span className="font-tl-mono text-foreground-body">USE CATALOG</span>,{" "}
+                    <span className="font-tl-mono text-foreground-body">USE SCHEMA</span>, and{" "}
+                    <span className="font-tl-mono text-foreground-body">CREATE TABLE</span> on that schema.
                   </p>
                 ) : null}
               </div>
@@ -315,11 +315,11 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-light bg-white shrink-0">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-secondary bg-white shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-text-secondary border border-border-light hover:bg-gray-50 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-foreground-subtle border border-border-secondary hover:bg-gray-50 transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -327,7 +327,7 @@ export default function DatabricksExportModal({ open, onClose, categoryName, row
             type="button"
             disabled={runPhase === "submitting" || runPhase === "running" || runPhase === "uploading"}
             onClick={runExport}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-text-primary hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none transition-opacity cursor-pointer"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-surface-primary hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none transition-opacity cursor-pointer"
           >
             {runPhase === "submitting" || runPhase === "running" || runPhase === "uploading"
               ? "Working…"

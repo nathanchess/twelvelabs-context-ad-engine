@@ -359,7 +359,7 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
             {/* Canvas */}
             <div
                 ref={containerRef}
-                className="relative w-full h-[500px] lg:h-[700px] rounded-2xl border border-dashed border-border-light bg-gray-50 overflow-hidden select-none cursor-move"
+                className="relative w-full h-[500px] lg:h-[700px] rounded-2xl border border-dashed border-border-secondary bg-gray-50 overflow-hidden select-none cursor-move"
                 style={{
                     backgroundImage: 'radial-gradient(circle, rgba(148,163,184,0.25) 1px, transparent 1px)',
                     backgroundSize: '20px 20px',
@@ -370,15 +370,15 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                 onMouseLeave={handleMouseUp}
             >
                 {/* Controls */}
-                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 bg-white p-1.5 rounded-xl shadow-lg border border-border-light">
-                    <button onClick={() => setTransform(p => ({ ...p, k: Math.min(p.k + 0.5, 5) }))} className="p-2 hover:bg-gray-50 rounded-lg text-text-secondary cursor-pointer">
+                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 bg-white p-1.5 rounded-xl shadow-lg border border-border-secondary">
+                    <button onClick={() => setTransform(p => ({ ...p, k: Math.min(p.k + 0.5, 5) }))} className="p-2 hover:bg-gray-50 rounded-lg text-foreground-subtle cursor-pointer">
                         <ZoomIn className="w-5 h-5" />
                     </button>
-                    <button onClick={() => setTransform(p => ({ ...p, k: Math.max(p.k - 0.5, 0.5) }))} className="p-2 hover:bg-gray-50 rounded-lg text-text-secondary cursor-pointer">
+                    <button onClick={() => setTransform(p => ({ ...p, k: Math.max(p.k - 0.5, 0.5) }))} className="p-2 hover:bg-gray-50 rounded-lg text-foreground-subtle cursor-pointer">
                         <ZoomOut className="w-5 h-5" />
                     </button>
                     <div className="h-px bg-border-light mx-1" />
-                    <button onClick={() => setTransform({ x: 0, y: 0, k: 1 })} className="p-2 hover:bg-gray-50 rounded-lg text-text-secondary cursor-pointer">
+                    <button onClick={() => setTransform({ x: 0, y: 0, k: 1 })} className="p-2 hover:bg-gray-50 rounded-lg text-foreground-subtle cursor-pointer">
                         <Maximize className="w-5 h-5" />
                     </button>
                 </div>
@@ -386,14 +386,14 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                 {loading && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md">
                         <div className="relative flex items-center justify-center mb-6">
-                            <div className="absolute w-20 h-20 border-4 border-mb-green-light/30 rounded-full animate-ping"></div>
-                            <div className="absolute w-16 h-16 border-4 border-t-mb-green-dark border-r-amber-400 border-b-mb-pink-dark border-l-mb-green-light rounded-full animate-spin"></div>
+                            <div className="absolute w-20 h-20 border-4 border-tl-master-brand-light-green/30 rounded-full animate-ping"></div>
+                            <div className="absolute w-16 h-16 border-4 border-t-tl-master-brand-dark-green border-r-tl-master-brand-orange border-b-tl-master-brand-dark-pink border-l-tl-master-brand-light-green rounded-full animate-spin"></div>
                             <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center z-10">
-                                <Cpu className="w-4 h-4 text-mb-green-dark animate-pulse" />
+                                <Cpu className="w-4 h-4 text-tl-master-brand-dark-green animate-pulse" />
                             </div>
                         </div>
-                        <h3 className="text-sm font-semibold text-text-primary tracking-tight mb-2">Analyzing Ad Inventory</h3>
-                        <p className="text-xs text-text-tertiary">Retrieving embeddings and running PCA projection...</p>
+                        <h3 className="text-sm font-semibold text-foreground-body tracking-tight mb-2">Analyzing Ad Inventory</h3>
+                        <p className="text-xs text-foreground-muted">Retrieving embeddings and running PCA projection...</p>
                     </div>
                 )}
                 {error && (
@@ -438,7 +438,7 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                                     {/* Hover Tooltip */}
                                     {(isHovered || isSelected) && (
                                         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 animate-[fadeInUp_0.2s_forwards]">
-                                            <div className="w-24 h-14 bg-gray-900 rounded-lg overflow-hidden border border-border-light shadow-xl">
+                                            <div className="w-24 h-14 bg-gray-900 rounded-lg overflow-hidden border border-border-secondary shadow-xl">
                                                 <SafeVideo
                                                     src={pt.video.hls?.videoUrl || ""}
                                                     className="w-full h-full object-cover"
@@ -457,14 +457,14 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
 
                 {/* Empty State */}
                 {!loading && points.length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center text-text-tertiary">
+                    <div className="absolute inset-0 flex items-center justify-center text-foreground-muted">
                         No embeddings available to visualize. (Make sure your videos have finished indexing)
                     </div>
                 )}
 
                 {/* Preview Card */}
                 {selectedVideo && (
-                    <div className="absolute top-4 right-4 z-30 w-80 bg-white rounded-2xl shadow-2xl border border-border-light overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+                    <div className="absolute top-4 right-4 z-30 w-80 bg-white rounded-2xl shadow-2xl border border-border-secondary overflow-hidden animate-[fadeIn_0.3s_ease-out]">
                         <div className="relative aspect-video bg-black group">
                             <SafeVideo
                                 src={selectedVideo.hls?.videoUrl || ""}
@@ -479,10 +479,10 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                             </button>
                         </div>
                         <div className="p-4">
-                            <h3 className="font-semibold text-text-primary line-clamp-1 mb-1">
+                            <h3 className="font-semibold text-foreground-body line-clamp-1 mb-1">
                                 {resolveVideoDisplayName(selectedVideo.id)}
                             </h3>
-                            <div className="flex items-center gap-4 text-xs text-text-tertiary mb-3">
+                            <div className="flex items-center gap-4 text-xs text-foreground-muted mb-3">
                                 <span className="flex items-center gap-1">
                                     <Clock className="w-3.5 h-3.5" />
                                     {Math.round(selectedVideo.systemMetadata?.duration || 0)}s
@@ -498,22 +498,22 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
             </div>
 
             {/* Ad metadata table + Databricks export (data is real; labels match export SQL) */}
-            <div className="mt-6 flex-none bg-white border border-border-light rounded-2xl overflow-hidden shadow-sm">
-                <div className="px-5 py-3 border-b border-border-light flex items-center justify-between bg-gray-50/50">
+            <div className="mt-6 flex-none bg-white border border-border-secondary rounded-2xl overflow-hidden shadow-sm">
+                <div className="px-5 py-3 border-b border-border-secondary flex items-center justify-between bg-gray-50/50">
                     <div className="flex items-center gap-2">
-                        <Database className="w-4 h-4 text-text-primary" />
-                        <h3 className="text-sm font-semibold text-text-primary">Databricks Ad Metadata Table</h3>
+                        <Database className="w-4 h-4 text-foreground-body" />
+                        <h3 className="text-sm font-semibold text-foreground-body">Databricks Ad Metadata Table</h3>
                     </div>
                     <div className="flex items-center gap-3">
                         {analyzingAll && (
-                            <span className="text-[11px] font-medium text-mb-green-dark animate-pulse">
+                            <span className="text-[11px] font-medium text-tl-master-brand-dark-green animate-pulse">
                                 Analyzing... {analyzingProgress}%
                             </span>
                         )}
                         <button
                             type="button"
                             onClick={() => setExportModalOpen(true)}
-                            className="flex items-center gap-1.5 text-[11px] font-medium text-text-secondary hover:text-text-primary hover:bg-gray-100 px-2.5 py-1 rounded border border-border-light transition-colors cursor-pointer"
+                            className="flex items-center gap-1.5 text-[11px] font-medium text-foreground-subtle hover:text-foreground-body hover:bg-gray-100 px-2.5 py-1 rounded border border-border-secondary transition-colors cursor-pointer"
                         >
                             <Download className="w-3.5 h-3.5" />
                             Export
@@ -523,7 +523,7 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                            <tr className="bg-white border-b border-border-light text-text-tertiary font-medium">
+                            <tr className="bg-white border-b border-border-secondary text-foreground-muted font-medium">
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Creative ID</th>
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Campaign Name</th>
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Duration</th>
@@ -536,10 +536,10 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                                 <th className="px-5 py-3 font-medium whitespace-nowrap">Marengo embedding</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border-light text-text-secondary">
+                        <tbody className="divide-y divide-border-light text-foreground-subtle">
                             {videos.length === 0 ? (
                                 <tr>
-                                    <td colSpan={10} className="px-5 py-8 text-center text-text-tertiary">No data available</td>
+                                    <td colSpan={10} className="px-5 py-8 text-center text-foreground-muted">No data available</td>
                                 </tr>
                             ) : (isTableExpanded ? videos : videos.slice(0, 5)).map((v, idx) => {
                                 const ana = analysisMap[v.id];
@@ -547,42 +547,42 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                                 const creativeId = resolveVideoDisplayName(v.id);
                                 const duration = `${Math.round(v.systemMetadata?.duration || 0)}s`;
 
-                                const campaignName = ana?.proposedTitle || <span className="text-text-tertiary italic text-[11px]">Pending Analysis...</span>;
-                                const contexts = ana?.recommendedContexts?.length > 0 ? `[${ana.recommendedContexts.slice(0, 3).join(", ")}]` : <span className="text-text-tertiary italic text-[11px]">Pending...</span>;
-                                const targetDemographics = ana?.targetDemographics?.length > 0 ? `[${ana.targetDemographics.join(", ")}]` : <span className="text-text-tertiary italic text-[11px]">Pending...</span>;
-                                const negativeDemographics = ana?.negativeDemographics?.length > 0 ? `[${ana.negativeDemographics.join(", ")}]` : <span className="text-text-tertiary italic text-[11px] font-medium text-mb-green-dark">None</span>;
+                                const campaignName = ana?.proposedTitle || <span className="text-foreground-muted italic text-[11px]">Pending Analysis...</span>;
+                                const contexts = ana?.recommendedContexts?.length > 0 ? `[${ana.recommendedContexts.slice(0, 3).join(", ")}]` : <span className="text-foreground-muted italic text-[11px]">Pending...</span>;
+                                const targetDemographics = ana?.targetDemographics?.length > 0 ? `[${ana.targetDemographics.join(", ")}]` : <span className="text-foreground-muted italic text-[11px]">Pending...</span>;
+                                const negativeDemographics = ana?.negativeDemographics?.length > 0 ? `[${ana.negativeDemographics.join(", ")}]` : <span className="text-foreground-muted italic text-[11px] font-medium text-tl-master-brand-dark-green">None</span>;
                                 const audience = ana?.targetAudience
                                     ? (typeof ana.targetAudience === 'string' ? ana.targetAudience : `[${[...(ana.targetAudience.highPriority || []), ...(ana.targetAudience.mediumPriority || []), ...(ana.targetAudience.lowPriority || [])].slice(0, 3).join(", ")}]`)
-                                    : <span className="text-text-tertiary italic text-[11px]">Pending...</span>;
-                                const negContexts = ana?.negativeCampaignContexts?.length > 0 ? `[${ana.negativeCampaignContexts.slice(0, 3).join(", ")}]` : <span className="text-text-tertiary italic text-[11px]">Pending...</span>;
-                                const exclusions = ana?.brandSafetyGARM?.length > 0 ? `[${ana.brandSafetyGARM.slice(0, 3).join(", ")}]` : <span className="text-text-tertiary italic text-[11px] font-medium text-mb-green-dark">Clean</span>;
+                                    : <span className="text-foreground-muted italic text-[11px]">Pending...</span>;
+                                const negContexts = ana?.negativeCampaignContexts?.length > 0 ? `[${ana.negativeCampaignContexts.slice(0, 3).join(", ")}]` : <span className="text-foreground-muted italic text-[11px]">Pending...</span>;
+                                const exclusions = ana?.brandSafetyGARM?.length > 0 ? `[${ana.brandSafetyGARM.slice(0, 3).join(", ")}]` : <span className="text-foreground-muted italic text-[11px] font-medium text-tl-master-brand-dark-green">Clean</span>;
 
                                 const adVec = getMarengoAdVectorForCreative(v);
 
                                 return (
                                     <tr key={v.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-5 py-3 font-mono text-[11px] font-medium text-text-primary truncate max-w-[120px]">{creativeId}</td>
-                                        <td className="px-5 py-3 font-medium text-text-primary truncate max-w-[180px]">{campaignName}</td>
-                                        <td className="px-5 py-3 truncate max-w-[100px] text-text-secondary">{duration}</td>
-                                        <td className="px-5 py-3 truncate max-w-[200px] text-text-secondary">{contexts}</td>
-                                        <td className="px-5 py-3 truncate max-w-[160px] text-text-secondary">{targetDemographics}</td>
+                                        <td className="px-5 py-3 font-tl-mono text-[11px] font-medium text-foreground-body truncate max-w-[120px]">{creativeId}</td>
+                                        <td className="px-5 py-3 font-medium text-foreground-body truncate max-w-[180px]">{campaignName}</td>
+                                        <td className="px-5 py-3 truncate max-w-[100px] text-foreground-subtle">{duration}</td>
+                                        <td className="px-5 py-3 truncate max-w-[200px] text-foreground-subtle">{contexts}</td>
+                                        <td className="px-5 py-3 truncate max-w-[160px] text-foreground-subtle">{targetDemographics}</td>
                                         <td className="px-5 py-3 truncate max-w-[160px] text-red-600">{negativeDemographics}</td>
-                                        <td className="px-5 py-3 truncate max-w-[160px] text-text-secondary">{audience}</td>
-                                        <td className="px-5 py-3 truncate max-w-[160px] text-text-secondary">{typeof negContexts === 'string' ? negContexts : null}{typeof negContexts === 'object' ? negContexts : null}</td>
+                                        <td className="px-5 py-3 truncate max-w-[160px] text-foreground-subtle">{audience}</td>
+                                        <td className="px-5 py-3 truncate max-w-[160px] text-foreground-subtle">{typeof negContexts === 'string' ? negContexts : null}{typeof negContexts === 'object' ? negContexts : null}</td>
                                         <td className="px-5 py-3 text-red-600 truncate max-w-[150px]">{exclusions}</td>
                                         <td className="px-5 py-3 max-w-[200px]">
                                             {adVec ? (
                                                 <span className="inline-flex flex-col gap-0.5">
-                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-mb-green-light/60 bg-mb-green-light/20 text-[10px] font-medium text-mb-green-dark w-fit">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-mb-green-dark shrink-0" />
+                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-tl-master-brand-light-green/60 bg-tl-master-brand-light-green/20 text-[10px] font-medium text-tl-master-brand-dark-green w-fit">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-tl-master-brand-dark-green shrink-0" />
                                                         {adVec.length}d in Delta export
                                                     </span>
-                                                    <span className="text-[10px] text-text-tertiary leading-snug">
+                                                    <span className="text-[10px] text-foreground-muted leading-snug">
                                                         JSON array for Mosaic / Vector Search
                                                     </span>
                                                 </span>
                                             ) : (
-                                                <span className="text-text-tertiary italic text-[11px]">
+                                                <span className="text-foreground-muted italic text-[11px]">
                                                     No clips in cache — refresh Videos tab
                                                 </span>
                                             )}
@@ -594,10 +594,10 @@ export default function EmbeddingsView({ videos, categoryName }: EmbeddingsViewP
                     </table>
                 </div>
                 {videos.length > 5 && (
-                    <div className="border-t border-border-light bg-gray-50/50">
+                    <div className="border-t border-border-secondary bg-gray-50/50">
                         <button
                             onClick={() => setIsTableExpanded(!isTableExpanded)}
-                            className="w-full px-5 py-2.5 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                            className="w-full px-5 py-2.5 text-xs font-medium text-foreground-subtle hover:text-foreground-body hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 cursor-pointer"
                         >
                             {isTableExpanded ? "Collapse view" : `View all ${videos.length} entries`}
                         </button>
