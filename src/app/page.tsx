@@ -17,12 +17,12 @@ import {
   SearchIcon,
   SegmentIcon,
   ServersIcon,
-  Text,
   TwelveLabsLogo,
   VideoIcon,
 } from "@twelvelabs-io/react";
 import ScrollFadeUp from "./components/ScrollFadeUp";
 import ScrollProgressBar from "./components/ScrollProgressBar";
+import OverviewCodeBlock from "./components/OverviewCodeBlock";
 
 type IconTone = "embed" | "search" | "analyze" | "brand";
 
@@ -40,26 +40,6 @@ function Divider() {
       <div className="flex-1 h-px bg-border-secondary" />
       <TwelveLabsLogo className="h-5 w-auto opacity-40" />
       <div className="flex-1 h-px bg-border-secondary" />
-    </div>
-  );
-}
-
-/* ── Code block ─────────────────────────────────────────── */
-function CodeBlock({ filename, language, code }: { filename: string; language: string; code: string }) {
-  return (
-    <div className="rounded-xl border border-[#2a2a2a] bg-[#1e1e2e] overflow-hidden shadow-xl">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/5 bg-white/2">
-        <div className="flex gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-          <span className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-          <span className="w-3 h-3 rounded-full bg-[#28C840]" />
-        </div>
-        <span className="text-[11px] text-[#888] font-tl-mono ml-2">{filename}</span>
-        <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-[#666]">{language}</span>
-      </div>
-      <pre className="px-5 py-4 text-[12.5px] leading-[1.7] font-tl-mono overflow-x-auto text-[#e1e1e1] whitespace-pre">
-        <code>{code}</code>
-      </pre>
     </div>
   );
 }
@@ -259,27 +239,6 @@ export default function Home() {
       <ScrollFadeUp order={0}>
       {/* ── Hero ──────────────────────────────────────────── */}
       <section className="px-8 pt-12 pb-10 max-w-[1200px] mx-auto">
-
-        {/* Label row */}
-        <div className="flex items-center gap-3 mb-6">
-          <TwelveLabsLogo className="h-10 w-auto" />
-          <Text variant="all-caps-mini" className="text-tl-master-brand-dark-green">
-            TwelveLabs
-          </Text>
-          <span className="text-[11px] text-foreground-muted">•</span>
-          <a
-            href="https://docs.twelvelabs.io/docs/introduction"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[11px] font-semibold uppercase tracking-[2px] text-foreground-muted transition-colors hover:text-foreground-body"
-          >
-            Documentation
-          </a>
-          <span className="text-[11px] text-foreground-muted">•</span>
-          <Text variant="all-caps-mini" className="text-foreground-muted">
-            Guide
-          </Text>
-        </div>
 
         {/* Headline */}
         <h1 className="text-[42px] font-bold tracking-[-2px] text-foreground-body leading-[1.1] mb-5 max-w-[700px]">
@@ -529,7 +488,7 @@ export default function Home() {
                   ))}
                 </ul>
               ) : null}
-              <CodeBlock filename={s.filename} language={s.language} code={s.code} />
+              <OverviewCodeBlock filename={s.filename} language={s.language} code={s.code} />
             </div>
           ))}
         </div>

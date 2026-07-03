@@ -83,6 +83,22 @@
   animation: modalIn 200ms ease-out forwards;
 }
 
+/* ── Shiki / VS Code Dark+ syntax highlighting ───────────────────────── */
+.syntax-code-block .syntax-code-block__body .shiki {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  font-size: 12.5px;
+  line-height: 1.7;
+  font-family: var(--font-tl-mono), ui-monospace, monospace;
+  background-color: #1e1e1e !important;
+}
+
+.syntax-code-block .syntax-code-block__body .shiki code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 /* ── Gradient-bordered search bar ────────────────────────────────────── */
 .gradient-search-wrapper {
   position: relative;

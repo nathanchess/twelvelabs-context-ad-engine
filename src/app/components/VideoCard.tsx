@@ -86,6 +86,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
     const rafRef = useRef<number>(0);
     const hoveringRef = useRef(false);
     const hlsRef = useRef<Hls | null>(null);
+    const adHlsStartRef = useRef<number | null>(null);
 
     const seekToPreviewStart = useCallback((el: HTMLVideoElement) => {
         if (previewStartSec <= 0) return;
@@ -119,6 +120,79 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
         });
     }, [seekToPreviewStart]);
 
+    const destroyHls = useCallback(() => {
+        if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
+        }
+    }, []);
+
+    const playAdInventoryPreview = useCallback((el: HTMLVideoElement) => {
+        if (!hoveringRef.current || !hlsUrl) return;
+
+        const startPlayback = () => {
+            if (!hoveringRef.current) return;
+
+            const seekAndPlay = () => {
+                if (!hoveringRef.current) return;
+                el.muted = true;
+                void el.play()
+                    .then(() => {
+                        if (!hoveringRef.current) {
+                            el.pause();
+                            return;
+                        }
+                        el.muted = false;
+                        setMuted(false);
+                    })
+                    .catch(() => {
+                        void el.play().catch(() => {});
+                    });
+            };
+
+            if (previewStartSec > 0) {
+                const target = Math.min(
+                    previewStartSec,
+                    Math.max(0, (el.duration || duration || previewStartSec) - 0.25),
+                );
+                if (target > 0 && Math.abs(el.currentTime - target) > 0.25) {
+                    el.currentTime = target;
+                    whenMediaCanPlay(el, seekAndPlay);
+                    return;
+                }
+            }
+            seekAndPlay();
+        };
+
+        const useHlsJs = Hls.isSupported() && hlsUrl.includes(".m3u8");
+        if (useHlsJs) {
+            if (hlsRef.current && adHlsStartRef.current !== previewStartSec) {
+                destroyHls();
+            }
+            if (!hlsRef.current) {
+                adHlsStartRef.current = previewStartSec;
+                const hls = new Hls({
+                    ...hlsClientConfig(),
+                    startPosition: previewStartSec > 0 ? previewStartSec : -1,
+                });
+                hlsRef.current = hls;
+                hls.loadSource(hlsUrl);
+                hls.attachMedia(el);
+                hls.on(Hls.Events.MANIFEST_PARSED, startPlayback);
+            } else {
+                hlsRef.current.startLoad(-1);
+                startPlayback();
+            }
+            return;
+        }
+
+        if (el.src !== hlsUrl) {
+            el.src = hlsUrl;
+            el.load();
+        }
+        whenMediaCanPlay(el, startPlayback);
+    }, [destroyHls, duration, hlsUrl, previewStartSec]);
+
     const tick = useCallback(() => {
         if (videoRef.current && hoveringRef.current) {
             const el = videoRef.current;
@@ -136,8 +210,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
         if (isVideoInventory) {
             playInventoryPreview(el);
         } else {
-            el.muted = false;
-            setMuted(false);
+            playAdInventoryPreview(el);
         }
     };
 
@@ -152,7 +225,10 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
                 seekToPreviewStart(videoRef.current);
                 setPreviewReady(true);
             } else {
-                videoRef.current.currentTime = searchMatch?.start ?? 0;
+                destroyHls();
+                adHlsStartRef.current = null;
+                videoRef.current.removeAttribute("src");
+                videoRef.current.load();
             }
         }
         setMuted(true);
@@ -167,14 +243,14 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
 
         setPreviewReady(false);
 
-        const destroyHls = () => {
+        const destroyHlsLocal = () => {
             if (hlsRef.current) {
                 hlsRef.current.destroy();
                 hlsRef.current = null;
             }
         };
 
-        destroyHls();
+        destroyHlsLocal();
         el.removeAttribute("src");
         el.load();
 
@@ -202,7 +278,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
             hls.on(Hls.Events.MANIFEST_PARSED, parkAtPreviewStart);
             return () => {
                 hls.off(Hls.Events.MANIFEST_PARSED, parkAtPreviewStart);
-                destroyHls();
+                destroyHlsLocal();
             };
         }
 
@@ -211,7 +287,7 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
         el.addEventListener("loadedmetadata", parkAtPreviewStart);
         return () => {
             el.removeEventListener("loadedmetadata", parkAtPreviewStart);
-            destroyHls();
+            destroyHlsLocal();
         };
     }, [isVideoInventory, hlsUrl, previewStartSec, seekToPreviewStart]);
 
@@ -257,34 +333,29 @@ export default function VideoCard({ video, slug, searchMatch, viewType = "ad-inv
             };
         }
 
-        el.muted = true;
+        playAdInventoryPreview(el);
 
-        if (el.src !== hlsUrl) {
-            el.src = hlsUrl;
-            el.load();
-        }
-        const tryPlay = () => {
-            if (!hovering) return;
-            if (previewStartSec > 0) el.currentTime = previewStartSec;
-            el.play()
-                .then(() => {
-                    el.muted = false;
-                    setMuted(false);
-                })
-                .catch(() => {});
+        const onWaiting = () => {
+            if (!hoveringRef.current) return;
+            el.addEventListener(
+                "canplay",
+                () => {
+                    if (hoveringRef.current && el.paused) {
+                        playAdInventoryPreview(el);
+                    }
+                },
+                { once: true },
+            );
         };
-        el.addEventListener("loadedmetadata", tryPlay);
-        el.addEventListener("canplay", tryPlay);
-        tryPlay();
 
+        el.addEventListener("waiting", onWaiting);
         rafRef.current = requestAnimationFrame(tick);
 
         return () => {
-            el.removeEventListener("loadedmetadata", tryPlay);
-            el.removeEventListener("canplay", tryPlay);
+            el.removeEventListener("waiting", onWaiting);
             cancelAnimationFrame(rafRef.current);
         };
-    }, [hovering, hlsUrl, tick, isVideoInventory, previewStartSec, playInventoryPreview, seekToPreviewStart]);
+    }, [hovering, hlsUrl, tick, isVideoInventory, previewStartSec, playInventoryPreview, playAdInventoryPreview, seekToPreviewStart]);
 
     const targetUrl = viewType === "ad-inventory" && slug
         ? `/ad-inventory/${slug}/${video.id}`

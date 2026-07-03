@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen antialiased">
+      <body className="flex min-h-screen font-tl-sans antialiased bg-surface-body text-foreground-body">
         <TooltipProvider>
           <Sidebar />
           <main className="min-w-0 flex-1">{children}</main>

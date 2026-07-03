@@ -3,6 +3,18 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import {
+  Button,
+  CloseIcon,
+  IconButton,
+  InfoIcon,
+  PlusIcon,
+  SettingsIcon,
+  Slider,
+  Text,
+  ToggleButton,
+  ToggleButtons,
+} from "@twelvelabs-io/react";
 import Hls from "hls.js";
 import { hlsClientConfig } from "../../lib/hlsClientConfig";
 import { useVideos } from "../../lib/videoCache";
@@ -937,17 +949,27 @@ export default function VideoInventoryDetailPage() {
             </div>
 
             {/* Config toggle */}
-            <button onClick={() => setShowConfigPanel(!showConfigPanel)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${showConfigPanel ? "border-gray-900 bg-gray-900 text-white" : "border-border-secondary bg-white text-foreground-body hover:bg-gray-50"}`}>
-              <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4"><path d="M6.5 1.5h3v3l2.1 1.2 2.1-2.1 2.1 2.1-2.1 2.1L15 9.5v3h-3l-1.2 2.1 2.1 2.1-2.1 2.1-2.1-2.1L7.5 18h-3l-1.2-2.1L1.2 18l-2.1-2.1 2.1-2.1L0 12.5v-3h3l1.2-2.1L2.1 5.3l2.1-2.1 2.1 2.1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" transform="translate(1,0) scale(0.85)" /><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.2" /></svg>
-              Config
-            </button>
-            <Link
-              href={`/video-inventory/${videoId}/generate?user=${selectedUserId}&safetyMode=${placementConfig.safetyMode}&maxBreaks=${placementConfig.maxBreaks}&minSpacingSeconds=${placementConfig.minSpacingSeconds}&minSegmentDuration=${placementConfig.minSegmentDuration}`}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-900 bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
+            <Button
+              type="button"
+              variant={showConfigPanel ? "secondary" : "outlined-gray"}
+              size="regular"
+              leftIcon={<SettingsIcon className="size-4" />}
+              onClick={() => setShowConfigPanel(!showConfigPanel)}
             >
-              <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 6h8M6 2v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-              Generate Video
-            </Link>
+              Config
+            </Button>
+            <Button
+              asChild
+              variant="primary"
+              size="regular"
+              leftIcon={<PlusIcon className="size-4" />}
+            >
+              <Link
+                href={`/video-inventory/${videoId}/generate?user=${selectedUserId}&safetyMode=${placementConfig.safetyMode}&maxBreaks=${placementConfig.maxBreaks}&minSpacingSeconds=${placementConfig.minSpacingSeconds}&minSegmentDuration=${placementConfig.minSegmentDuration}`}
+              >
+                Generate Video
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -961,54 +983,96 @@ export default function VideoInventoryDetailPage() {
           <>
             {/* ── Placement Config Panel ── */}
             {showConfigPanel && (
-              <div className="rounded-xl border border-border-secondary bg-gray-50/60 p-4">
+              <div className="rounded-xl border border-border-secondary bg-surface-card p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">Placement Configuration</h3>
-                  <button onClick={() => setShowConfigPanel(false)} className="text-foreground-muted hover:text-foreground-body transition-colors">
-                    <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-                  </button>
+                  <Text variant="all-caps-mini" className="text-foreground-muted">
+                    Placement Configuration
+                  </Text>
+                  <IconButton
+                    type="button"
+                    variant="ghosted"
+                    size="regular"
+                    onClick={() => setShowConfigPanel(false)}
+                    aria-label="Close placement configuration"
+                  >
+                    <CloseIcon className="size-4" />
+                  </IconButton>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">Safety Mode</label>
-                      <button
+                      <Text variant="all-caps-mini" as="label" className="text-foreground-muted">
+                        Safety Mode
+                      </Text>
+                      <IconButton
                         type="button"
+                        variant="ghosted"
+                        size="mini"
                         onClick={() => setShowSafetyInfo(true)}
-                        className="w-4 h-4 rounded-full flex items-center justify-center text-foreground-muted hover:text-foreground-body hover:bg-gray-100 transition-colors shrink-0"
-                        title="Learn about safety modes"
+                        aria-label="Learn about safety modes"
                       >
-                        <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5"><path d="M6 8V6M6 4h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" /></svg>
-                      </button>
+                        <InfoIcon className="size-4" />
+                      </IconButton>
                     </div>
-                    <div className="flex rounded-lg border border-border-secondary overflow-hidden">
-                      {(["strict", "balanced", "revenue_max"] as const).map((mode) => (
-                        <button key={mode} onClick={() => setPlacementConfig((c) => ({ ...c, safetyMode: mode }))} className={`flex-1 py-1.5 text-[10px] font-semibold capitalize transition-colors ${placementConfig.safetyMode === mode ? "bg-gray-900 text-white" : "bg-white text-foreground-subtle hover:bg-gray-50"}`}>
-                          {mode.replace(/_/g, " ")}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-foreground-muted mt-1.5 leading-snug">
+                    <ToggleButtons
+                      value={placementConfig.safetyMode}
+                      onValueChange={(value) => {
+                        if (value === "strict" || value === "balanced" || value === "revenue_max") {
+                          setPlacementConfig((c) => ({ ...c, safetyMode: value }));
+                        }
+                      }}
+                      size="sm"
+                      className="w-full"
+                    >
+                      <ToggleButton value="strict">Strict</ToggleButton>
+                      <ToggleButton value="balanced">Balanced</ToggleButton>
+                      <ToggleButton value="revenue_max">Revenue max</ToggleButton>
+                    </ToggleButtons>
+                    <Text variant="paragraph-mini" className="text-foreground-muted mt-1.5 leading-snug">
                       Affects break ranking and ad scores from interruption, sentiment, and tone (see info).
-                    </p>
+                    </Text>
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted block mb-1.5">
+                    <Text variant="all-caps-mini" as="label" className="text-foreground-muted block mb-2">
                       Max Breaks: {placementConfig.maxBreaks}
-                    </label>
-                    <input type="range" min="1" max="8" value={placementConfig.maxBreaks} onChange={(e) => setPlacementConfig((c) => ({ ...c, maxBreaks: parseInt(e.target.value) }))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-800" />
+                    </Text>
+                    <Slider
+                      min={1}
+                      max={8}
+                      step={1}
+                      value={[placementConfig.maxBreaks]}
+                      onValueChange={([value]) => setPlacementConfig((c) => ({ ...c, maxBreaks: value }))}
+                      translucentOnPress
+                      aria-label="Maximum ad breaks"
+                    />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted block mb-1.5">
+                    <Text variant="all-caps-mini" as="label" className="text-foreground-muted block mb-2">
                       Min Spacing: {placementConfig.minSpacingSeconds}s
-                    </label>
-                    <input type="range" min="30" max="600" step="30" value={placementConfig.minSpacingSeconds} onChange={(e) => setPlacementConfig((c) => ({ ...c, minSpacingSeconds: parseInt(e.target.value) }))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-800" />
+                    </Text>
+                    <Slider
+                      min={30}
+                      max={600}
+                      step={30}
+                      value={[placementConfig.minSpacingSeconds]}
+                      onValueChange={([value]) => setPlacementConfig((c) => ({ ...c, minSpacingSeconds: value }))}
+                      translucentOnPress
+                      aria-label="Minimum spacing between breaks in seconds"
+                    />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted block mb-1.5">
+                    <Text variant="all-caps-mini" as="label" className="text-foreground-muted block mb-2">
                       Min Segment: {placementConfig.minSegmentDuration}s
-                    </label>
-                    <input type="range" min="10" max="120" step="5" value={placementConfig.minSegmentDuration} onChange={(e) => setPlacementConfig((c) => ({ ...c, minSegmentDuration: parseInt(e.target.value) }))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gray-800" />
+                    </Text>
+                    <Slider
+                      min={10}
+                      max={120}
+                      step={5}
+                      value={[placementConfig.minSegmentDuration]}
+                      onValueChange={([value]) => setPlacementConfig((c) => ({ ...c, minSegmentDuration: value }))}
+                      translucentOnPress
+                      aria-label="Minimum segment duration in seconds"
+                    />
                   </div>
                 </div>
               </div>

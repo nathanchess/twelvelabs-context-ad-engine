@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Button,
+  CloseIcon,
+  IconButton,
+  Text,
+} from "@twelvelabs-io/react";
+
 interface SettingsModalProps {
     open: boolean;
     onClose: () => void;
@@ -19,68 +26,65 @@ export default function SettingsModal({ open, onClose }: SettingsModalProps) {
             className="fixed inset-0 z-[100] flex items-center justify-center"
             onClick={onClose}
         >
-            <div className="absolute inset-0 bg-gray-700/40 backdrop-blur-[2px] animate-fade-in" />
+            <div className="absolute inset-0 bg-surface-primary/40 backdrop-blur-[2px] animate-fade-in" />
 
             <div
-                className="relative bg-white rounded-2xl shadow-lg w-full max-w-[480px] mx-4 animate-modal-in"
+                className="relative bg-surface-white rounded-2xl shadow-lg w-full max-w-[480px] mx-4 animate-modal-in border border-border-secondary"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between px-6 py-5 border-b border-border-secondary">
-                    <h2 className="text-lg font-semibold text-foreground-body">Configuration</h2>
-                    <button
+                    <Text variant="title-small-bold" as="h2" className="text-foreground-body">
+                        Configuration
+                    </Text>
+                    <IconButton
+                        type="button"
+                        variant="ghosted"
+                        size="regular"
                         onClick={onClose}
-                        className="p-1.5 rounded-md text-foreground-muted hover:text-foreground-body hover:bg-gray-50 transition-colors duration-200"
                         aria-label="Close settings"
                     >
-                        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
-                            <path d="M6.02051 5.31348L8.9668 2.36719L9.67383 3.07422L6.72754 6.02051L9.65332 8.94629L8.94629 9.65332L6.02051 6.72754L3.07422 9.67383L2.36719 8.9668L5.31348 6.02051L2.34668 3.05371L3.05371 2.34668L6.02051 5.31348Z" fill="currentColor" />
-                            <path fillRule="evenodd" clipRule="evenodd" d="M8.40039 0C10.3883 0.000211285 11.9998 1.61169 12 3.59961V8.40039C11.9998 10.3883 10.3883 11.9998 8.40039 12H3.59961C1.61169 11.9998 0.000211285 10.3883 0 8.40039V3.59961C0.000211156 1.61169 1.61169 0.000211157 3.59961 0H8.40039ZM3.59961 1C2.16398 1.00021 1.00021 2.16398 1 3.59961V8.40039C1.00021 9.83602 2.16398 10.9998 3.59961 11H8.40039C9.83602 10.9998 10.9998 9.83602 11 8.40039V3.59961C10.9998 2.16398 9.83602 1.00021 8.40039 1H3.59961Z" fill="currentColor" />
-                        </svg>
-                    </button>
+                        <CloseIcon className="size-4" />
+                    </IconButton>
                 </div>
 
-                <div className="px-6 py-6 space-y-4 text-sm text-foreground-subtle leading-relaxed">
-                    <p>
+                <div className="px-6 py-6 space-y-4">
+                    <Text variant="paragraph-small" className="text-foreground-subtle leading-relaxed">
                         API keys and integration credentials for this deployment are{" "}
                         <span className="font-medium text-foreground-body">managed directly by TwelveLabs internal team members</span>.
                         They are not configurable through this interface.
-                    </p>
-                    <p>
+                    </Text>
+                    <Text variant="paragraph-small" className="text-foreground-subtle leading-relaxed">
                         If you need to run or configure the app yourself (for example a local deployment), use the
                         source repository: environment variables such as{" "}
                         <span className="font-tl-mono text-foreground-body">TL_API_KEY</span>,{" "}
                         <span className="font-tl-mono text-foreground-body">BLOB_READ_WRITE_TOKEN</span>, and optional{" "}
                         <span className="font-tl-mono text-foreground-body">DATABRICKS_*</span> are documented there for
                         analyze, search, video listing, generation, Vercel Blob caching, and the ad metadata SQL export.
-                    </p>
-                    <a
-                        href={DEFAULT_SOURCE_REPO}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-border-secondary bg-gray-50 text-sm font-medium text-foreground-body hover:bg-gray-100 hover:border-border-primary transition-colors"
+                    </Text>
+                    <Button
+                        asChild
+                        variant="outlined-gray"
+                        size="regular"
+                        className="w-full"
                     >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 shrink-0" aria-hidden>
-                            <path
-                                fillRule="evenodd"
-                                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
-                            />
-                        </svg>
-                        GitHub — source &amp; local setup
-                    </a>
-                    <p className="text-xs text-foreground-muted">
+                        <a
+                            href={DEFAULT_SOURCE_REPO}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            GitHub — source &amp; local setup
+                        </a>
+                    </Button>
+                    <Text variant="paragraph-mini" className="text-foreground-muted">
                         Keys are never stored in the browser; exposing them in a deployed UI would be unsafe for a
                         public demo.
-                    </p>
+                    </Text>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border-secondary">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-full bg-gray-700 text-white text-sm font-medium hover:bg-gray-600 transition-all duration-200 hover:rounded-2xl"
-                    >
+                    <Button type="button" variant="secondary" size="regular" onClick={onClose}>
                         Close
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

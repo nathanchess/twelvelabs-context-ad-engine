@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import Hls from "hls.js";
 import dynamic from "next/dynamic";
 import AddCategoryModal from "../../components/AddCategoryModal";
+import SemanticSearchField from "../../components/SemanticSearchField";
+import { Spinner, Text } from "@twelvelabs-io/react";
 
 const EmbeddingsView = dynamic(() => import("../../components/EmbeddingsView"), {
     ssr: false,
@@ -522,56 +524,30 @@ export default function AdCategoryDetailPage() {
                             <div className="flex items-center justify-start mb-5">
                                 {/* Search Bar */}
                                 <div ref={searchRef} className="relative z-40 w-full max-w-[400px]">
-                                    <div className={`gradient-search-wrapper ${searchFocused ? "active" : ""}`}>
-                                        <div className="gradient-search-inner flex items-center">
-                                            <span className={`pl-4 transition-colors duration-200 ${searchFocused ? "text-foreground-body" : "text-foreground-muted"}`}>
-                                                <svg viewBox="0 0 12 11.707" fill="none" className="w-4 h-4">
-                                                    <path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C9.98528 0 12 2.01472 12 4.5C12 6.98528 9.98528 9 7.5 9C6.36252 8.99998 5.32451 8.57691 4.53223 7.88086L0.707031 11.707L0 11L3.85742 7.1416C3.31847 6.39969 3 5.48716 3 4.5C3 2.01474 5.01475 4.07169e-05 7.5 0ZM7.5 1C5.56704 1.00004 4 2.56703 4 4.5C4 6.43297 5.56704 7.99996 7.5 8C9.433 8 11 6.433 11 4.5C11 2.567 9.433 1 7.5 1Z" fill="currentColor" />
-                                                </svg>
-                                            </span>
-                                            <input
-                                                type="text"
-                                                placeholder="Semantic search within these videos..."
-                                                value={searchQuery}
-                                                onChange={(e) => {
-                                                    setSearchQuery(e.target.value);
-                                                    setShowPrompts(e.target.value === "");
-                                                }}
-                                                onFocus={() => {
-                                                    setSearchFocused(true);
-                                                    if (!searchQuery) setShowPrompts(true);
-                                                }}
-                                                onBlur={() => setSearchFocused(false)}
-                                                className="w-full px-3 py-2 bg-transparent text-sm text-foreground-body placeholder:text-foreground-muted focus:outline-none"
-                                            />
-                                            {isSearching && (
-                                                <div className="pr-4 text-foreground-muted">
-                                                    <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-20" />
-                                                        <path d="M12 2a10 10 0 019.75 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                                    </svg>
-                                                </div>
-                                            )}
-                                            {searchQuery && !isSearching && (
-                                                <button
-                                                    onClick={() => setSearchQuery("")}
-                                                    className="pr-4 text-foreground-muted hover:text-foreground-body transition-colors cursor-pointer"
-                                                >
-                                                    <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
-                                                        <path d="M9.5 2.5L2.5 9.5M2.5 2.5L9.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <SemanticSearchField
+                                        value={searchQuery}
+                                        onChange={(value) => {
+                                            setSearchQuery(value);
+                                            setShowPrompts(value === "");
+                                        }}
+                                        onFocus={() => {
+                                            setSearchFocused(true);
+                                            if (!searchQuery) setShowPrompts(true);
+                                        }}
+                                        onBlur={() => setSearchFocused(false)}
+                                        focused={searchFocused}
+                                        isSearching={isSearching}
+                                        onClear={() => setSearchQuery("")}
+                                        placeholder="Semantic search within these videos..."
+                                    />
 
                                     {/* Prompts Dropdown */}
                                     {showPrompts && searchFocused && (
                                         <div className="absolute top-full left-0 right-0 mt-2 bg-surface-white rounded-xl border border-border-secondary shadow-lg z-50 animate-fade-in overflow-hidden">
                                             <div className="px-4 py-2.5 border-b border-border-secondary">
-                                                <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-foreground-muted">
+                                                <Text variant="all-caps-mini" className="text-foreground-muted">
                                                     Try a sample prompt
-                                                </p>
+                                                </Text>
                                             </div>
                                             {["Close-up product shots", "People talking", "Brand logo appearing"].map((prompt, i) => (
                                                 <button
@@ -581,11 +557,8 @@ export default function AdCategoryDetailPage() {
                                                         setSearchQuery(prompt);
                                                         setShowPrompts(false);
                                                     }}
-                                                    className="w-full text-left px-4 py-2.5 text-sm text-foreground-subtle hover:bg-gray-50 hover:text-foreground-body transition-colors flex items-center gap-2.5 cursor-pointer"
+                                                    className="w-full text-left px-4 py-2.5 text-sm text-foreground-subtle hover:bg-surface-card hover:text-foreground-body transition-colors flex items-center gap-2.5 cursor-pointer"
                                                 >
-                                                    <span className="text-foreground-muted shrink-0">
-                                                        <svg viewBox="0 0 12 11.707" fill="none" className="w-3.5 h-3.5"><path fillRule="evenodd" clipRule="evenodd" d="M7.5 0C9.98528 0 12 2.01472 12 4.5C12 6.98528 9.98528 9 7.5 9C6.36252 8.99998 5.32451 8.57691 4.53223 7.88086L0.707031 11.707L0 11L3.85742 7.1416C3.31847 6.39969 3 5.48716 3 4.5C3 2.01474 5.01475 4.07169e-05 7.5 0ZM7.5 1C5.56704 1.00004 4 2.56703 4 4.5C4 6.43297 5.56704 7.99996 7.5 8C9.433 8 11 6.433 11 4.5C11 2.567 9.433 1 7.5 1Z" fill="currentColor" /></svg>
-                                                    </span>
                                                     {prompt}
                                                 </button>
                                             ))}
@@ -595,11 +568,8 @@ export default function AdCategoryDetailPage() {
                             </div>
                             {videosLoading ? (
                                 <div className="flex flex-col items-center justify-center py-16 rounded-2xl border border-border-secondary">
-                                    <svg className="animate-spin w-6 h-6 text-foreground-muted mb-3" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-20" />
-                                        <path d="M12 2a10 10 0 019.75 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
-                                    <p className="text-sm text-foreground-muted">Loading videos…</p>
+                                    <Spinner size="lg" aria-label="Loading videos" />
+                                    <Text variant="paragraph-small" className="mt-3 text-foreground-muted">Loading videos…</Text>
                                 </div>
                             ) : displayVideos.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

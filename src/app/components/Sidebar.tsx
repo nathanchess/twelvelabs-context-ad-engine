@@ -76,14 +76,6 @@ export default function Sidebar() {
           </Button>
         </div>
 
-        {!collapsed && (
-          <div className="px-5 pt-4 pb-2">
-            <Text variant="all-caps-mini" className="tracking-[1.5px] text-foreground-muted">
-              Contextual Video Library
-            </Text>
-          </div>
-        )}
-
         <nav className="flex flex-1 flex-col gap-1 px-3 py-1">
           {navItems.map((item) => {
             const isActive =
